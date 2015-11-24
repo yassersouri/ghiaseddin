@@ -4,7 +4,7 @@ This repo contains the code for the paper "Deep Relative Attributes" by Yaser So
 
 ## The paper
 
-The paper was originally submitted to CVPR 2016 with the name "Deep Relative Attributes" by Yaser Souri (@yassersouri), Erfan Noury (@erfannoury), Ehsan Adeli Mosabbeb (@eadeli).
+The paper was originally submitted to CVPR 2016 with the name "Deep Relative Attributes" by Yaser Souri ([@yassersouri](https://github.com/yassersouri)), Erfan Noury ([@erfannoury](https://github.com/erfannoury)), Ehsan Adeli Mosabbeb ([@eadeli](https://github.com/eadeli)).
 Later a modified version of the paper was put on arXiv [arxiv:1511.xxxx](http://arxiv.org/abs/1511.xxxx).
 Who knows what happens next?!
 
@@ -33,4 +33,4 @@ _Coming Soon_
 
 ## Feedback
 
-We are not experts in Theano and/or Lasagne or in Deep Learning. So please provide us with your feedback. If you find any issues inside the paper please contact Yasser Souri (yassersouri@gmail.com). If you have issues or feedback related to the code, please use the Github issues section and file a new issue.
+We are not experts in Theano and/or Lasagne or in Deep Learning. So please provide us with your feedback. If you find any issues inside the paper please contact Yasser Souri (yassersouri@gmail.com). If you have issues or feedback related to the code, please use the [Github issues](https://github.com/yassersouri/Ghiaseddin/issues) section and file a new issue.
