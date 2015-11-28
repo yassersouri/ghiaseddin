@@ -10,12 +10,12 @@ Who knows what happens next?!
 
 ## The name
 
-The name is Ghiaseddin which is written as "قیاس الدین" in Persian/Arabic. It is pronouned as "Ghiyāth ad-Dīn". Ghias or "قیاس" is the Persia/Arabic word that refers to the act of comparing two things (which is what we actually do in relative attributes).
+The name is "Ghiaseddin" which is written as "قیاس الدین" in Persian/Arabic. It is pronouned as "Ghiyāth ad-Dīn". Ghias or "قیاس" is the Persia/Arabic word that refers to the act of comparing two things (which is what we actually do in relative attributes).
 Furthermore Ghiaseddin has a relation to [Ghiyāth al-Dīn Jamshīd al-Kāshī](https://en.wikipedia.org/wiki/Jamsh%C4%ABd_al-K%C4%81sh%C4%AB) "غیاث الدین جمشید کاشانی", where "Ghiaseddin" is pronounced similar to the first name of "Jamshīd al-Kāshī" but written with different letters in Persian/Arabic ("قیاس الدین" vs "غیاث الدین").
 
 ## Dependencies
 
-The code is written in Python2.7 and uses the [Lasagne](https://github.com/Lasagne/Lasagne) deep learning framework which is based on the amazing [Theano](https://github.com/Theano/Theano). These two are the main dependencies of the project for a complete list of dependencies and their versions see `requirements.txt`.
+The code is written in Python2.7 and uses the [Lasagne](https://github.com/Lasagne/Lasagne) deep learning framework which is based on the amazing [Theano](https://github.com/Theano/Theano). These two are the main dependencies of the project. For a complete list of dependencies and their versions see `requirements.txt`.
 
 ## Running the Experiments
 
