@@ -94,10 +94,10 @@ class Zappos50K1(DatasetHelper):
 
         # fill place holders
         self.image_adresses = [os.path.join(images_path, p[0]) for p in imagepath_info]
-        self._fil_pair_target(train_index, image_pairs_order, self.train_pairs, self.train_targets)
-        self._fil_pair_target(test_index, image_pairs_order, self.test_pairs, self.test_targets)
+        self._fill_pair_target(train_index, image_pairs_order, self.train_pairs, self.train_targets)
+        self._fill_pair_target(test_index, image_pairs_order, self.test_pairs, self.test_targets)
 
-    def _fil_pair_target(self, indexes, pair_order, pairs, targets):
+    def _fill_pair_target(self, indexes, pair_order, pairs, targets):
         for i, id in enumerate(indexes):
             pair_info = pair_order[id - 1]  # because of matlab indexing
             pairs[i, :] = pair_info[0:2] - 1
