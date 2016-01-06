@@ -5,7 +5,7 @@ This repo contains the code for the paper "Deep Relative Attributes" by Yaser So
 ## The paper
 
 The paper was originally submitted to CVPR 2016 with the name "Deep Relative Attributes" by Yaser Souri ([@yassersouri](https://github.com/yassersouri)), Erfan Noury ([@erfannoury](https://github.com/erfannoury)), Ehsan Adeli Mosabbeb ([@eadeli](https://github.com/eadeli)).
-Later a modified version of the paper was put on arXiv: [arxiv:1511.xxxx](http://arxiv.org/abs/1511.xxxx).
+Later a modified version of the paper was put on arXiv: [arxiv:1512.04103](http://arxiv.org/abs/1512.04103).
 Who knows what happens next?!
 
 ## The name
