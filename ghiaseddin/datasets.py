@@ -63,6 +63,12 @@ class DatasetHelper(object):
         ax2.axis('off')
         plt.show()
 
+    def train_generator(batch_size, shuffle=True):
+        pass
+
+    def test_generator(batch_size):
+        pass
+
 
 class Zappos50K1(DatasetHelper):
     """The dataset helper class for Zappos50K-1, the coarse version of the dataset."""
