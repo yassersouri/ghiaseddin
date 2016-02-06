@@ -3,10 +3,8 @@ import os
 import matplotlib.pylab as plt
 import utils
 import numpy as np
-
-
-class DatasetGenerator(object):
-    pass
+import itertools
+import boltons.iterutils
 
 
 class DatasetHelper(object):
@@ -16,10 +14,10 @@ class DatasetHelper(object):
 
     This helper needs the following properties to successfully perform the necessary actions:
         1. _ATT_NAMES: It is a 1 dimensional list or list-like object, containing string names for the attributes in the dataset.
-        2. _image_adresses: It is a 1 dimentional list or list-like object, containing absolute image address for each image in the dataset.
+        2. _image_adresses: It is a 1 dimensional list or list-like object, containing absolute image address for each image in the dataset.
         3. _train_pairs: It is a (n x 2) array where n in the number of training pairs and they contain index of the images as the image
         address is specified with that index in _image_adresses.
-        4. _train_targets: It is a (n) array where n in the number of training pairs and contains the target posterior for our method
+        4. _train_targets: It is a (n) shaped array where n in the number of training pairs and contains the target posterior for our method
         ($\in [0, 1]$).
         5. _test_pairs: Similar to _train_pairs but for testing pairs.
         6. _test_targets: Similar to _train_targets but for for testing pairs.
@@ -39,16 +37,7 @@ class DatasetHelper(object):
         self.attribute_index = attribute_index
         assert 0 <= attribute_index < len(self._ATT_NAMES)
 
-    def show_pair(self, pair_id, test=False):
-        """
-        Shows pairs of images in the dataset and their annotation (target) for the set attribute.
-        """
-        pair = self._test_pairs[pair_id, :] if test else self._train_pairs[pair_id, :]
-        target = self._test_targets[pair_id] if test else self._train_targets[pair_id]
-
-        img1_path = self._image_adresses[pair[0]]
-        img2_path = self._image_adresses[pair[1]]
-
+    def _show_image_path_target(self, img1_path, img2_path, target):
         if target > 0.5:
             print 'A is more %s than B (t: %2.2f)' % (self._ATT_NAMES[self.attribute_index], target)
         elif target < 0.5:
@@ -67,11 +56,62 @@ class DatasetHelper(object):
         ax2.axis('off')
         plt.show()
 
-    def train_generator(batch_size, shuffle=True):
-        pass
+    def show_pair(self, pair_id, test=False):
+        """
+        Shows pairs of images in the dataset and their annotation (target) for the set attribute.
+        """
+        pair = self._test_pairs[pair_id, :] if test else self._train_pairs[pair_id, :]
+        target = self._test_targets[pair_id] if test else self._train_targets[pair_id]
 
-    def test_generator(batch_size):
-        pass
+        img1_path = self._image_adresses[pair[0]]
+        img2_path = self._image_adresses[pair[1]]
+
+        self._show_image_path_target(img1_path, img2_path, target)
+
+    def _iterate_pair_target(self, indices, values, targets):
+        for i in indices:
+            yield ((self._image_adresses[values[i, 0]], self._image_adresses[values[i, 1]]), targets[i])
+
+    def train_generator(self, batch_size, shuffle=True, cut_tail=True):
+        """
+        Returns a generator which yields an array of size `batch_size` where each element of the array is a tuple of kind ((img1_path, img2_path), target) from the training set.
+            e.g.: [((img1_path, img2_path), target), ((img1_path, img2_path), target), ...]
+
+        `batch_size` must be an int.
+        If `shuffle` is `True` then the items will be shuffled.
+        If `cut_tail` is `True` then the last item from the generator might not have length equal to `batch_size`. It might have a length of less than `batch_size`.
+        If `cut_tail` is `False` then all items from the generator will have the same length equal to `batch_size`. In order to achieve this some of the items from the dataset will not get generated.
+
+        Example Usage:
+        >>> for batch in dataset.train_generator(64):
+        >>>     for (img1_path, img2_path), target in batch:
+        >>>         # do something with the batch
+        """
+        indices = np.arange(len(self._train_targets))
+
+        if shuffle:
+            # shuffle the indices in-place
+            np.random.shuffle(indices)
+
+        to_return = boltons.iterutils.chunked_iter(self._iterate_pair_target(indices, self._train_pairs, self._train_targets), batch_size)
+
+        if cut_tail:
+            slice_size = int(len(self._train_targets) / batch_size)
+            return itertools.islice(to_return, slice_size)
+        else:
+            return to_return
+
+    def test_generator(self, batch_size):
+        """
+        Similar to `train_generator` but for the test set.
+
+        `batch_size` must be an int.
+        The last item from the generator might contain `None`. This means that the test data was not enough to fill the last batch.
+        The user of the dataset must take care of these `None` values.
+        """
+        indices = np.arange(len(self._test_targets))
+
+        return boltons.iterutils.chunked_iter(self._iterate_pair_target(indices, self._test_pairs, self._test_targets), batch_size, fill=None)
 
 
 class Zappos50K1(DatasetHelper):

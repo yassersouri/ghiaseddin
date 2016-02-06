@@ -9,3 +9,4 @@ six==1.10.0
 scikit-image==0.11.3
 git+https://github.com/Theano/Theano.git@9b8847d#egg=Theano==dev.git
 git+https://github.com/Lasagne/Lasagne.git@ffed652#egg=Lasagne==dev.git
+boltons==16.0.0
