@@ -15,13 +15,26 @@ Furthermore Ghiaseddin has a relation to [Ghiyāth al-Dīn Jamshīd al-Kāshī](
 
 ## Dependencies
 
-The code is written in Python2.7 and uses the [Lasagne](https://github.com/Lasagne/Lasagne) deep learning framework which is based on the amazing [Theano](https://github.com/Theano/Theano). These two are the main dependencies of the project. For a complete list of dependencies and their versions see `requirements.txt`.
+The code is written in Python 2.7 and uses the [Lasagne](https://github.com/Lasagne/Lasagne) deep learning framework which is based on the amazing [Theano](https://github.com/Theano/Theano). These two are the main dependencies of the project. For a complete list of dependencies and their versions see `requirements.txt`.
 
 ## Running the Experiments
 
 ### Training a new model
 
-_Coming Soon_
+```python
+import sys
+sys.path.appen('/path/to/ghiaseddin/')
+import ghiassedin
+
+zappos = ghiaseddin.Zappos50K1(ghiaseddin.settings.zappos_root, attribute_index=0, split_index=0)
+googlenet = ghiaseddin.GoogeLenet(ghiaseddin.settings.googlenet_ilsvrc_weights)
+model = ghiaseddin.Ghiaseddin(convet=googlenet, dataset=zappos) # possibility to add other options
+
+for i in range(10):
+    loss = model.train_one_epoch()
+
+model.save('/path/to/model.pkl')
+```
 
 ### Calculating accuracy of a model
 
