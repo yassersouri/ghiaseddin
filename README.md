@@ -28,7 +28,7 @@ import ghiassedin
 
 zappos = ghiaseddin.Zappos50K1(ghiaseddin.settings.zappos_root, attribute_index=0, split_index=0)
 googlenet = ghiaseddin.GoogeLenet(ghiaseddin.settings.googlenet_ilsvrc_weights)
-model = ghiaseddin.Ghiaseddin(convet=googlenet, dataset=zappos) # possibility to add other options
+model = ghiaseddin.Ghiaseddin(convnet=googlenet, dataset=zappos) # possibility to add other options
 
 for i in range(10):
     loss = model.train_one_epoch()
