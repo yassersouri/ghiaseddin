@@ -7,7 +7,7 @@ import itertools
 import boltons.iterutils
 
 
-class DatasetHelper(object):
+class Dataset(object):
     """
     Base class for a dataset helper. Implements functionality while subclasses will focus on loading
     the data into the desired format.
@@ -114,7 +114,7 @@ class DatasetHelper(object):
         return boltons.iterutils.chunked_iter(self._iterate_pair_target(indices, self._test_pairs, self._test_targets), batch_size, fill=None)
 
 
-class Zappos50K1(DatasetHelper):
+class Zappos50K1(Dataset):
     """The dataset helper class for Zappos50K-1, the coarse version of the dataset."""
 
     _ATT_NAMES = ['open', 'pointy', 'sporty', 'comfort']
