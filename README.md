@@ -28,11 +28,18 @@ import ghiassedin
 
 zappos = ghiaseddin.Zappos50K1(ghiaseddin.settings.zappos_root, attribute_index=0, split_index=0)
 googlenet = ghiaseddin.GoogeLenet(ghiaseddin.settings.googlenet_ilsvrc_weights)
-model = ghiaseddin.Ghiaseddin(convnet=googlenet, dataset=zappos) # possibility to add other options
+model = ghiaseddin.Ghiaseddin(extractor=googlenet, dataset=zappos) # possibility to add other options
 
+# train the model for 10 epochs
+losses = []
 for i in range(10):
     loss = model.train_one_epoch()
+    losses.append(loss)
 
+# or like this
+losses = model.train_n_epoch(10) # here losses is a list of size 10
+
+# save the trained model
 model.save('/path/to/model.pkl')
 ```
 
