@@ -17,7 +17,13 @@ Furthermore Ghiaseddin has a relation to [Ghiyāth al-Dīn Jamshīd al-Kāshī](
 
 The code is written in Python 2.7 and uses the [Lasagne](https://github.com/Lasagne/Lasagne) deep learning framework which is based on the amazing [Theano](https://github.com/Theano/Theano). These two are the main dependencies of the project. For a complete list of dependencies and their versions see `requirements.txt`.
 
-## Running the Experiments
+## Running the experiments
+
+### Downloading the necessary files
+
+If you want to perform training yourself, you need to download some files (initial weights files and dataset images).
+
+_Coming Soon_
 
 ### Training a new model
 

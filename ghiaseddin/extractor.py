@@ -7,6 +7,8 @@ except:
     import lasagne.layers.Pool2DLayer as Pool2DLayer
     import lasagne.layers.Conv2DLayer as Conv2DLayer
 
+import cPickle as pickle
+
 
 class Extractor(object):
     """
@@ -18,15 +20,21 @@ class Extractor(object):
     A custom extractor must have the following properties:
         - net
             this contains the network layers
-        - layers
-            this contains the name of the layers, not exactly in the order which they appear in the network
         - input_var
             this can be set at a later time with `set_input_var` which is called by the model.
+        - out_layer
+            this layer is the output of the feature extraction part of the network. e.g. for VGG16 it is the fc7 layer
     """
     INPUT_LAYER_NAME = 'input'
 
     def __init__(self, weights=None):
         self.weights = weights
+
+    @staticmethod
+    def _get_weights_from_file(file_addr, weights_key):
+        with open(file_addr, 'rb') as f:
+            init_weights = pickle.load(f)[weights_key]
+        return init_weights
 
     def set_input_var(self, input_var, batch_size=None):
         # TODO: Are we sure this works? Because we are going to call this function after we have called the init.
@@ -38,6 +46,65 @@ class Extractor(object):
 class GoogLeNet(Extractor):
     def __init__(self, weights):
         super(Extractor, self).__init__(weights)
+
+        def build_inception_module(name, input_layer, nfilters):
+            # nfilters: (pool_proj, 1x1, 3x3_reduce, 3x3, 5x5_reduce, 5x5)
+            net = {}
+            net['pool'] = Pool2DLayer(input_layer, pool_size=3, stride=1, pad=1)
+            net['pool_proj'] = Conv2DLayer(net['pool'], nfilters[0], 1)
+
+            net['1x1'] = Conv2DLayer(input_layer, nfilters[1], 1)
+
+            net['3x3_reduce'] = Conv2DLayer(input_layer, nfilters[2], 1)
+            net['3x3'] = Conv2DLayer(net['3x3_reduce'], nfilters[3], 3, pad=1)
+
+            net['5x5_reduce'] = Conv2DLayer(input_layer, nfilters[4], 1)
+            net['5x5'] = Conv2DLayer(net['5x5_reduce'], nfilters[5], 5, pad=2)
+
+            net['output'] = lasagne.layers.ConcatLayer([
+                net['1x1'],
+                net['3x3'],
+                net['5x5'],
+                net['pool_proj'],
+                ])
+
+            return {'{}/{}'.format(name, k): v for k, v in net.items()}
+
+        net = {}
+        net['input'] = lasagne.layers.InputLayer((None, 3, 224, 224), input_var=None)
+        net['conv1/7x7_s2'] = Conv2DLayer(net['input'], 64, 7, stride=2, pad=3)
+        net['pool1/3x3_s2'] = Pool2DLayer(net['conv1/7x7_s2'], pool_size=3, stride=2, ignore_border=False)
+        net['pool1/norm1'] = lasagne.layers.LocalResponseNormalization2DLayer(net['pool1/3x3_s2'], alpha=0.00002, k=1)
+        net['conv2/3x3_reduce'] = Conv2DLayer(net['pool1/norm1'], 64, 1)
+        net['conv2/3x3'] = Conv2DLayer(net['conv2/3x3_reduce'], 192, 3, pad=1)
+        net['conv2/norm2'] = lasagne.layers.LocalResponseNormalization2DLayer(net['conv2/3x3'], alpha=0.00002, k=1)
+        net['pool2/3x3_s2'] = Pool2DLayer(net['conv2/norm2'], pool_size=3, stride=2)
+
+        net.update(build_inception_module('inception_3a',
+                                          net['pool2/3x3_s2'],
+                                          [32, 64, 96, 128, 16, 32]))
+        net.update(build_inception_module('inception_3b',
+                                          net['inception_3a/output'],
+                                          [64, 128, 128, 192, 32, 96]))
+        net['pool3/3x3_s2'] = Pool2DLayer(net['inception_3b/output'], pool_size=3, stride=2)
+
+        net.update(build_inception_module('inception_4a', net['pool3/3x3_s2'], [64, 192, 96, 208, 16, 48]))
+        net.update(build_inception_module('inception_4b', net['inception_4a/output'], [64, 160, 112, 224, 24, 64]))
+        net.update(build_inception_module('inception_4c', net['inception_4b/output'], [64, 128, 128, 256, 24, 64]))
+        net.update(build_inception_module('inception_4d', net['inception_4c/output'], [64, 112, 144, 288, 32, 64]))
+        net.update(build_inception_module('inception_4e', net['inception_4d/output'], [128, 256, 160, 320, 32, 128]))
+        net['pool4/3x3_s2'] = Pool2DLayer(net['inception_4e/output'], pool_size=3, stride=2)
+
+        net.update(build_inception_module('inception_5a', net['pool4/3x3_s2'], [128, 256, 160, 320, 32, 128]))
+        net.update(build_inception_module('inception_5b', net['inception_5a/output'], [128, 384, 192, 384, 48, 128]))
+
+        net['pool5/7x7_s1'] = lasagne.layers.GlobalPoolLayer(net['inception_5b/output'])
+
+        self.net = net
+        self.out_layer = net['pool5/7x7_s1']
+
+        init_weights = self._get_weights_from_file(self.weights, 'param values')
+        lasagne.layers.set_all_param_values(self.out_layer, init_weights)
 
 
 class VGG16(Extractor):
@@ -66,8 +133,9 @@ class VGG16(Extractor):
         net['pool5'] = Pool2DLayer(net['conv5_3'], 2)
         net['fc6'] = lasagne.layers.DenseLayer(net['pool5'], num_units=4096)
         net['fc7'] = lasagne.layers.DenseLayer(net['fc6'], num_units=4096)
-        # net['fc8'] = lasagne.layers.DenseLayer(net['fc7'], num_units=1000, nonlinearity=None)
-        # net['prob'] = lasagne.layers.NonlinearityLayer(net['fc8'], lasagne.nonlinearities.softmax)
-        # net_output = net['prob']
+
         self.net = net
-        self.layers = net.keys()
+        self.out_layer = net['fc7']
+
+        init_weights = self._get_weights_from_file(self.weights, 'param values')
+        lasagne.layers.set_all_param_values(self.out_layer, init_weights)
