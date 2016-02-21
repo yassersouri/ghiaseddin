@@ -1,11 +1,11 @@
 import lasagne
 
 try:
-    import lasagne.layers.dnn.Pool2DDNNLayer as Pool2DLayer
-    import lasagne.layers.dnn.Conv2DDNNLayer as Conv2DLayer
+    from lasagne.layers.dnn import Pool2DDNNLayer as Pool2DLayer
+    from lasagne.layers.dnn import Conv2DDNNLayer as Conv2DLayer
 except:
-    import lasagne.layers.Pool2DLayer as Pool2DLayer
-    import lasagne.layers.Conv2DLayer as Conv2DLayer
+    from lasagne.layers import Pool2DLayer as Pool2DLayer
+    from lasagne.layers import Conv2DLayer as Conv2DLayer
 
 import cPickle as pickle
 
@@ -27,7 +27,7 @@ class Extractor(object):
     """
     INPUT_LAYER_NAME = 'input'
 
-    def __init__(self, weights=None):
+    def __init__(self, weights):
         self.weights = weights
 
     @staticmethod
@@ -45,7 +45,7 @@ class Extractor(object):
 
 class GoogLeNet(Extractor):
     def __init__(self, weights):
-        super(Extractor, self).__init__(weights)
+        super(GoogLeNet, self).__init__(weights)
 
         def build_inception_module(name, input_layer, nfilters):
             # nfilters: (pool_proj, 1x1, 3x3_reduce, 3x3, 5x5_reduce, 5x5)
@@ -104,12 +104,13 @@ class GoogLeNet(Extractor):
         self.out_layer = net['pool5/7x7_s1']
 
         init_weights = self._get_weights_from_file(self.weights, 'param values')
+        init_weights = init_weights[:-2]  # since we have chopped off the last two layers of the network, we won't need those
         lasagne.layers.set_all_param_values(self.out_layer, init_weights)
 
 
 class VGG16(Extractor):
     def __init__(self, weights):
-        super(Extractor, self).__init__(weights)
+        super(VGG16, self).__init__(weights)
 
         net = {}
         net['input'] = lasagne.layers.InputLayer((None, 3, 224, 224), input_var=None)
@@ -138,4 +139,5 @@ class VGG16(Extractor):
         self.out_layer = net['fc7']
 
         init_weights = self._get_weights_from_file(self.weights, 'param values')
+        init_weights = init_weights[:-2]  # since we have chopped off the last two layers of the network, we won't need those
         lasagne.layers.set_all_param_values(self.out_layer, init_weights)
