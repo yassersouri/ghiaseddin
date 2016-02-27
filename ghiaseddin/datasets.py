@@ -123,8 +123,8 @@ class Zappos50K1(Dataset):
         super(Zappos50K1, self).__init__(root, attribute_index)
         self.split_index = split_index
 
-        data_path = os.path.join(self.root, 'data')
-        images_path = os.path.join(self.root, 'images')
+        data_path = os.path.join(self.root, 'ut-zap50k-data')
+        images_path = os.path.join(self.root, 'ut-zap50k-images')
         imagepath_info = scipy.io.loadmat(os.path.join(data_path, 'image-path.mat'))['imagepath'].flatten()
         train_test_file = scipy.io.loadmat(os.path.join(data_path, 'train-test-splits.mat'))
         labels_file = scipy.io.loadmat(os.path.join(data_path, 'zappos-labels.mat'))
