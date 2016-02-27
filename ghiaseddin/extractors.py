@@ -1,4 +1,5 @@
 import lasagne
+import utils
 
 try:
     from lasagne.layers.dnn import Pool2DDNNLayer as Pool2DLayer
@@ -8,6 +9,7 @@ except:
     from lasagne.layers import Conv2DLayer as Conv2DLayer
 
 import cPickle as pickle
+import numpy as np
 
 
 class Extractor(object):
@@ -26,6 +28,10 @@ class Extractor(object):
             this layer is the output of the feature extraction part of the network. e.g. for VGG16 it is the fc7 layer
     """
     INPUT_LAYER_NAME = 'input'
+    _input_height = 224
+    _input_width = 224
+    _input_raw_scale = 255
+    _input_mean_to_subtract = [104, 117, 123]
 
     def __init__(self, weights):
         self.weights = weights
@@ -42,8 +48,36 @@ class Extractor(object):
         input_layer_size[0] = batch_size
         self.net[self.INPUT_LAYER_NAME] = lasagne.layers.InputLayer(input_layer_size, input_var=input_var)
 
+    def _general_image_preprocess(self, img):
+        img = utils.resize_image(img, (self._input_height, self._input_height))
+
+        img = img.transpose((2, 0, 1))
+        img = img[::-1, ...] * self._input_raw_scale
+        img[0, ...] -= self._input_mean_to_subtract[0]
+        img[1, ...] -= self._input_mean_to_subtract[1]
+        img[2, ...] -= self._input_mean_to_subtract[2]
+
+        return img
+
+    def output_for_image(self, image_addr):
+        img = utils.load_image(image_addr)
+        img = self._general_image_preprocess(img)
+
+        data = np.zeros((1, 3, self._input_height, self._input_width))
+        data[0, ...] = img
+
+        inp = lasagne.utils.T.tensor4('inp')
+        out = lasagne.layers.get_output(self.out_layer, inputs=inp)
+
+        return out.eval({inp: data})
+
 
 class GoogLeNet(Extractor):
+    _input_height = 224
+    _input_width = 224
+    _input_raw_scale = 255
+    _input_mean_to_subtract = [104, 117, 123]
+
     def __init__(self, weights):
         super(GoogLeNet, self).__init__(weights)
 
