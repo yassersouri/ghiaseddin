@@ -33,7 +33,7 @@ sys.path.appen('/path/to/ghiaseddin/')
 import ghiassedin
 
 zappos = ghiaseddin.Zappos50K1(ghiaseddin.settings.zappos_root, attribute_index=0, split_index=0)
-googlenet = ghiaseddin.GoogeLenet(ghiaseddin.settings.googlenet_ilsvrc_weights)
+googlenet = ghiaseddin.GoogeLeNet(ghiaseddin.settings.googlenet_ilsvrc_weights)
 model = ghiaseddin.Ghiaseddin(extractor=googlenet, dataset=zappos) # possibility to add other options
 
 # train the model for 10 epochs

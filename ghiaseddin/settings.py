@@ -1,4 +1,6 @@
 import os
+import boltons.fileutils
+
 
 data_root = os.path.join(os.path.expanduser('~'), 'ghiaseddin')
 model_root = os.path.join(data_root, 'models')
@@ -11,3 +13,6 @@ zappos_result_models_root = os.path.join(result_models_root, 'zappos')
 
 dataset_root = os.path.join(data_root, 'datasets')
 zappos_root = os.path.join(dataset_root, 'Zappos50K')
+
+boltons.fileutils.mkdir_p(zappos_result_models_root)
+boltons.fileutils.mkdir_p(zappos_root)
