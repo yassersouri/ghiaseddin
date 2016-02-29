@@ -63,7 +63,7 @@ class Extractor(object):
         img = utils.load_image(image_addr)
         img = self._general_image_preprocess(img)
 
-        data = np.zeros((1, 3, self._input_height, self._input_width))
+        data = np.zeros((1, 3, self._input_height, self._input_width), dtype=np.float32)
         data[0, ...] = img
 
         inp = lasagne.utils.T.tensor4('inp')
