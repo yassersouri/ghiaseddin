@@ -7,6 +7,6 @@ pytz==2015.7
 scipy==0.16.1
 six==1.10.0
 scikit-image==0.11.3
-git+https://github.com/Theano/Theano.git@9b8847d#egg=Theano==dev.git
-git+https://github.com/Lasagne/Lasagne.git@ffed652#egg=Lasagne==dev.git
+git+https://github.com/Theano/Theano.git@a34dec55bfd6bd84e92a97346b5665f685b83a44#egg=Theano==dev.git
+git+https://github.com/Lasagne/Lasagne.git@0440814d4e7936de8423c29bbf9d5423ccc28ee8#egg=Lasagne==dev.git
 boltons==16.0.0
