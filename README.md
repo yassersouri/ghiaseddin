@@ -31,7 +31,7 @@ _Coming Soon_
 
 ```python
 import sys
-sys.path.appen('/path/to/ghiaseddin/')
+sys.path.append('/path/to/ghiaseddin/')
 import ghiassedin
 
 zappos = ghiaseddin.Zappos50K1(ghiaseddin.settings.zappos_root, attribute_index=0, split_index=0)
