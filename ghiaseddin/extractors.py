@@ -57,6 +57,18 @@ class Extractor(object):
         return img
 
     def output_for_image(self, image_addr):
+        """
+        This function gives you the output from the extractor for a single image.
+
+        Please don't use this function in your code. What you should be doing is this
+        ```
+        out_f = extractor.get_output_function()
+        y = out_f(x) # y is output while x is your input to the extractor
+
+        ```
+
+        This function is just here for historical reasons and for debugging.
+        """
         img = utils.load_image(image_addr)
         img = self._general_image_preprocess(img)
 
@@ -66,10 +78,16 @@ class Extractor(object):
         inp = lasagne.utils.T.tensor4('inp')
         out = lasagne.layers.get_output(self.out_layer, inputs=inp, deterministic=True)
 
-        return out.eval({inp: data})
+        return out.eval({inp: data}).flatten()
+
+    def get_output_function(self):
+        pass
 
 
 class GoogLeNet(Extractor):
+    """
+    Todo: Add DropOut layers.
+    """
     _input_height = 224
     _input_width = 224
     _input_raw_scale = 255
@@ -116,6 +134,8 @@ class GoogLeNet(Extractor):
         net['pool3/3x3_s2'] = PoolLayer(net['inception_3b/output'], pool_size=3, stride=2, ignore_border=False)
 
         net.update(build_inception_module('inception_4a', net['pool3/3x3_s2'], [64, 192, 96, 208, 16, 48]))
+
+
         net.update(build_inception_module('inception_4b', net['inception_4a/output'], [64, 160, 112, 224, 24, 64]))
         net.update(build_inception_module('inception_4c', net['inception_4b/output'], [64, 128, 128, 256, 24, 64]))
         net.update(build_inception_module('inception_4d', net['inception_4c/output'], [64, 112, 144, 288, 32, 64]))
