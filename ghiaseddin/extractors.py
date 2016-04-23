@@ -114,8 +114,7 @@ class GoogLeNet(Extractor):
                 net['1x1'],
                 net['3x3'],
                 net['5x5'],
-                net['pool_proj'],
-                ])
+                net['pool_proj']])
 
             return {'{}/{}'.format(name, k): v for k, v in net.items()}
 
@@ -134,7 +133,6 @@ class GoogLeNet(Extractor):
         net['pool3/3x3_s2'] = PoolLayer(net['inception_3b/output'], pool_size=3, stride=2, ignore_border=False)
 
         net.update(build_inception_module('inception_4a', net['pool3/3x3_s2'], [64, 192, 96, 208, 16, 48]))
-
 
         net.update(build_inception_module('inception_4b', net['inception_4a/output'], [64, 160, 112, 224, 24, 64]))
         net.update(build_inception_module('inception_4c', net['inception_4b/output'], [64, 128, 128, 256, 24, 64]))
