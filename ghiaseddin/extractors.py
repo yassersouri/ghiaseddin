@@ -94,7 +94,7 @@ class GoogLeNet(Extractor):
     """
     _input_height = 224
     _input_width = 224
-    img = self._input_raw_scale(img[::-1, ...])
+    _input_raw_scale = lambda x: x * 255
     _input_mean_to_subtract = [104, 117, 123]
 
     def __init__(self, weights):
