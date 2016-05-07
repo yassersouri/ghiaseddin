@@ -144,12 +144,13 @@ class GoogLeNet(Extractor):
         net.update(build_inception_module('inception_5b', net['inception_5a/output'], [128, 384, 192, 384, 48, 128]))
 
         net['pool5/7x7_s1'] = lasagne.layers.GlobalPoolLayer(net['inception_5b/output'])
+        net['dropout5'] = lasagne.layers.DropoutLayer(net['pool5/7x7_s1'], p=0.4)
 
         self.net = net
-        self.out_layer = net['pool5/7x7_s1']
+        self.out_layer = net['dropout5']
 
         init_weights = self._get_weights_from_file(self.weights, 'param values')
-        init_weights = init_weights[:-2]  # since we have chopped off the last two layers of the network, we won't need those
+        init_weights = init_weights[:-2]  # since we have chopped off the last two layers of the network (loss3/classifier and prob), we won't need those
         lasagne.layers.set_all_param_values(self.out_layer, init_weights)
 
 
