@@ -18,6 +18,8 @@ Furthermore Ghiaseddin has a relation to [Ghiyāth al-Dīn Jamshīd al-Kāshī](
 
 The code is written in Python 2.7 and uses the [Lasagne](https://github.com/Lasagne/Lasagne) deep learning framework which is based on the amazing [Theano](https://github.com/Theano/Theano). These two are the main dependencies of the project. Besides these you will be needing CUDA 7 and cuDNN 4. It might work without CUDA or with lower versions but I have not tested it.
 
+To visualize the training procedure I have used [pastalog](https://github.com/rewonc/pastalog) which you will have to install.
+
 For a complete list of dependencies and their versions see `requirements.txt`.
 
 ## Running the experiments
