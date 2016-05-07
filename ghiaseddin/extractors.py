@@ -36,7 +36,10 @@ class Extractor(object):
     @staticmethod
     def _get_weights_from_file(file_addr, weights_key):
         with open(file_addr, 'rb') as f:
-            init_weights = pickle.load(f)[weights_key]
+            params = pickle.load(f)
+            init_weights = params[weights_key]
+            if 'mean value' in params.keys():
+                self._input_mean_to_subtract = params['mean value']
         return init_weights
 
     def set_input_var(self, input_var, batch_size=None):
