@@ -27,7 +27,8 @@ class Extractor(object):
     INPUT_LAYER_NAME = 'input'
     _input_height = 224
     _input_width = 224
-    _input_raw_scale = 255
+    # define a lambda function for the raw scale transformation, since some models have a different kind of scaling (Inception v3)
+    _input_raw_scale = lambda x: x * 255
     _input_mean_to_subtract = [104, 117, 123]
 
     def __init__(self, weights):
@@ -52,7 +53,7 @@ class Extractor(object):
         img = utils.resize_image(img, (self._input_height, self._input_height))
 
         img = img.transpose((2, 0, 1))
-        img = img[::-1, ...] * self._input_raw_scale
+        img = self._input_raw_scale(img[::-1, ...])
         img[0, ...] -= self._input_mean_to_subtract[0]
         img[1, ...] -= self._input_mean_to_subtract[1]
         img[2, ...] -= self._input_mean_to_subtract[2]
