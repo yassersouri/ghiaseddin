@@ -7,10 +7,7 @@ model_root = os.path.join(data_root, 'models')
 
 googlenet_weights = os.path.join(model_root, 'blvc_googlenet.pkl')
 vgg16_weights = os.path.join(model_root, 'vgg16.pkl')
-inceptionv3_weights = os.path.join(model_root, 'inception_v3.pkl)
-
-# this path should contain classify_image_graph_def.pb and 
-tf_inceptionv3_modeldir = os.path.join(model_root, 'tf-inception')
+inceptionv3_weights = os.path.join(model_root, 'inception_v3.pkl')
 
 result_models_root = os.path.join(model_root, 'results')
 zappos_result_models_root = os.path.join(result_models_root, 'zappos')
