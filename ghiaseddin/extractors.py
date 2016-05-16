@@ -27,8 +27,7 @@ class Extractor(object):
     INPUT_LAYER_NAME = 'input'
     _input_height = 224
     _input_width = 224
-    # define a lambda function for the raw scale transformation, since some models have a different kind of scaling (Inception v3)
-    _input_raw_scale = lambda x: x * 255
+    _input_raw_scale = 255
     _input_mean_to_subtract = [104, 117, 123]
 
     def __init__(self, weights):
@@ -39,8 +38,6 @@ class Extractor(object):
         with open(file_addr, 'rb') as f:
             params = pickle.load(f)
             init_weights = params[weights_key]
-            if 'mean value' in params.keys():
-                self._input_mean_to_subtract = params['mean value']
         return init_weights
 
     def set_input_var(self, input_var, batch_size=None):
@@ -53,7 +50,7 @@ class Extractor(object):
         img = utils.resize_image(img, (self._input_height, self._input_height))
 
         img = img.transpose((2, 0, 1))
-        img = self._input_raw_scale(img[::-1, ...])
+        img = self._input_raw_scale * img[::-1, ...]
         img[0, ...] -= self._input_mean_to_subtract[0]
         img[1, ...] -= self._input_mean_to_subtract[1]
         img[2, ...] -= self._input_mean_to_subtract[2]
@@ -94,7 +91,7 @@ class GoogLeNet(Extractor):
     """
     _input_height = 224
     _input_width = 224
-    _input_raw_scale = lambda x: x * 255
+    _input_raw_scale = 255
     _input_mean_to_subtract = [104, 117, 123]
 
     def __init__(self, weights):
@@ -123,7 +120,7 @@ class GoogLeNet(Extractor):
             return {'{}/{}'.format(name, k): v for k, v in net.items()}
 
         net = {}
-        net['input'] = lasagne.layers.InputLayer((None, 3, None, None))
+        net['input'] = lasagne.layers.InputLayer((None, 3, 224, 224))
         net['conv1/7x7_s2'] = ConvLayer(net['input'], 64, 7, stride=2, pad=3, flip_filters=False)
         net['pool1/3x3_s2'] = PoolLayer(net['conv1/7x7_s2'], pool_size=3, stride=2, ignore_border=False)
         net['pool1/norm1'] = lasagne.layers.LocalResponseNormalization2DLayer(net['pool1/3x3_s2'], alpha=0.00002, k=1)
@@ -159,6 +156,11 @@ class GoogLeNet(Extractor):
 
 
 class VGG16(Extractor):
+    _input_mean_to_subtract = [104, 117, 123]
+    _input_raw_scale = 255
+    _input_height = 224
+    _input_width = 224
+
     def __init__(self, weights):
         super(VGG16, self).__init__(weights)
 
@@ -200,6 +202,17 @@ class InceptionV3(Extractor):
     _input_width = 299
     _input_raw_scale = lambda x: 2 * x - 1
     _input_mean_to_subtract = [0, 0, 0]
+
+    def _general_image_preprocess(self, img):
+        img = utils.resize_image(img, (self._input_height, self._input_height))
+
+        img = img.transpose((2, 0, 1))
+        img = 2 * img[::-1, ...] - 1  # change image from (0, 1) to (-1, 1)
+        img[0, ...] -= self._input_mean_to_subtract[0]
+        img[1, ...] -= self._input_mean_to_subtract[1]
+        img[2, ...] -= self._input_mean_to_subtract[2]
+
+        return img
 
     def __init__(self, weights):
         super(InceptionV3, self).__init__(weights)
