@@ -11,9 +11,11 @@ inceptionv3_weights = os.path.join(model_root, 'inception_v3.pkl')
 
 result_models_root = os.path.join(model_root, 'results')
 zappos_result_models_root = os.path.join(result_models_root, 'zappos')
+lfw10_result_models_root = os.path.join(result_models_root, 'lfw10')
 
 dataset_root = os.path.join(data_root, 'datasets')
 zappos_root = os.path.join(dataset_root, 'Zappos50K')
+lfw10_root = os.path.join(dataset_root, 'LFW10')
 
 boltons.fileutils.mkdir_p(zappos_result_models_root)
 boltons.fileutils.mkdir_p(zappos_root)
