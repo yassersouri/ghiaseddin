@@ -160,6 +160,7 @@ class Zappos50K1(Dataset):
             else:
                 raise Exception("invalid target")
 
+
 class LFW10(Dataset):
     """The dataset helper class for LFW-10 dataset."""
 
@@ -167,6 +168,7 @@ class LFW10(Dataset):
 
     def __init__(self, root, attribute_index):
         super(LFW10, self).__init__(root, attribute_index)
+        self.root = os.path.join(self.root, 'LFW10')
 
         data_path = os.path.join(self.root, 'annotations')
         images_path = os.path.join(self.root, 'images')
