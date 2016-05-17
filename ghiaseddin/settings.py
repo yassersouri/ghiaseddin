@@ -19,3 +19,5 @@ lfw10_root = os.path.join(dataset_root, 'LFW10')
 
 boltons.fileutils.mkdir_p(zappos_result_models_root)
 boltons.fileutils.mkdir_p(zappos_root)
+boltons.fileutils.mkdir_p(lfw10_result_models_root)
+boltons.fileutils.mkdir_p(lfw10_root)
