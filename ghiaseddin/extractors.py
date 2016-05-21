@@ -42,9 +42,9 @@ class Extractor(object):
 
     def set_input_var(self, input_var, batch_size=None):
         # TODO: Are we sure this works? Because we are going to call this function after we have called the init.
-        input_layer_size = self.net[self.INPUT_LAYER_NAME].shape
+        input_layer_size = list(self.net[self.INPUT_LAYER_NAME].shape)
         input_layer_size[0] = batch_size
-        self.net[self.INPUT_LAYER_NAME] = lasagne.layers.InputLayer(input_layer_size, input_var=input_var)
+        self.net[self.INPUT_LAYER_NAME] = lasagne.layers.InputLayer(tuple(input_layer_size), input_var=input_var)
 
     def _general_image_preprocess(self, img):
         img = utils.resize_image(img, (self._input_height, self._input_height))
@@ -81,8 +81,8 @@ class Extractor(object):
 
         return out.eval({inp: data}).flatten()
 
-    def get_output_function(self):
-        pass
+    def get_output_layer(self):
+        return self.out_layer
 
 
 class GoogLeNet(Extractor):
