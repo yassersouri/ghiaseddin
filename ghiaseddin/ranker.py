@@ -2,6 +2,7 @@ import lasagne
 import theano
 import theano.tensor as T
 import numpy as np
+from collections import OrderedDict
 
 
 class Ghiaseddin(object):
@@ -16,7 +17,6 @@ class Ghiaseddin(object):
         self.extractor = extractor.get_output_layer()
         self.dataset = dataset
         self.train_generator = self.dataset.train_generator(batch_size=train_batch_size, shuffle=True, cut_tail=True)
-
 
         self.extractor_learning_rate_shared_var = theano.shared(np.cast['float32'](extractor_learning_rate), name='extractor_learning_rate')
         self.ranker_learning_rate_shared_var = theano.shared(np.cast['float32'](ranker_learning_rate), name='ranker_learning_rate')
@@ -40,6 +40,21 @@ class Ghiaseddin(object):
 
         self.test_absolute_rank_estimate = lasagne.layers.get_output(self.absolute_rank_estimate, deterministic=True)
 
+    def _create_theano_functions(self):
+        """
+        Will be creating theano functions for training and testing
+        """
+        self._feature_extractor_updates = lasagne.updates.rmsprop(self.loss, self.extractor_params, learning_rate=self.extractor_learning_rate)
+        self._ranker_updates = lasagne.updates.rmsprop(self.loss, self.ranker_params, learning_rate=self.ranker_learning_rate)
+
+        f = self._feature_extractor_updates.items()
+        r = self._ranker_updates.items()
+        f.extend(r)
+
+        self._all_updates = OrderedDict(f)
+
+        self.training_function = theano.function([self.input_var, self.traget_var], self.loss, updates=self._all_updates)
+        self.testing_function = theano.function([self.input_var], self.test_absolute_rank_estimate)
 
     def _absolute_rank_estimate(self, incoming):
         """
