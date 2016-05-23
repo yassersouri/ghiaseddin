@@ -28,9 +28,33 @@ For a complete list of dependencies and their versions see `requirements.txt`.
 
 If you want to perform training yourself, you need to download some files (initial weights files and dataset images).
 
+#### Downloading datasets
+
+**Zappos50K**
+
+```bash
+python /path/to/project/ghiaseddin/scripts/download_dataset_zappos.py
+```
+
+**LFW10**
+
+```bash
+python /path/to/project/ghiaseddin/scripts/download_dataset_lfw10.py
+```
+
+#### Downloading initial weights (models pretrained on ILSVRC)
+
 _Coming Soon_
 
 ### Training a new model
+
+First start the pastalog server.
+
+```bash
+/path/to/project/ghiaseddin/scripts/start_pastalog.sh
+```
+
+Then you can use ghiaseddin to train:
 
 ```python
 import sys
