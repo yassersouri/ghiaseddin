@@ -99,6 +99,7 @@ class Extractor(object):
             (img1_path, img2_path), target = batch_item
             images[2 * i, ...] = self._general_image_preprocess(utils.load_image(img1_path))
             images[2 * i + 1, ...] = self._general_image_preprocess(utils.load_image(img2_path))
+            annotations[i] = target
 
         return images, annotations, mask
 
