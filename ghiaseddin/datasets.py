@@ -177,36 +177,36 @@ class LFW10(Dataset):
 
         data_path = os.path.join(self.root, 'annotations')
         images_path = os.path.join(self.root, 'images')
-        
+
         annotation_file_train = scipy.io.loadmat(os.path.join(data_path, '{}train.mat'.format(self._ATT_NAMES[attribute_index])))
         annotation_file_test = scipy.io.loadmat(os.path.join(data_path, '{}test.mat'.format(self._ATT_NAMES[attribute_index])))
-        
+
         # the training set
         self._train_pairs = np.zeros((500, 2), dtype=np.int)
         self._train_targets = np.zeros((500,), dtype=np.float32)
         for i in xrange(500):
-            self._train_pairs[i, 0] = int(annotation_file_train['images_compare'][i,1][0][:-4]) - 1 # first to remove the '.jpg' part
-            self._train_pairs[i, 1] = int(annotation_file_train['images_compare'][i,2][0][:-4]) - 1 # , then to convert to index
-            idx = np.argmax(annotation_file_train['attribute_strengths'][i,1:])
+            self._train_pairs[i, 0] = int(annotation_file_train['images_compare'][i, 1][0][:-4]) - 1  # first to remove the '.jpg' part
+            self._train_pairs[i, 1] = int(annotation_file_train['images_compare'][i, 2][0][:-4]) - 1  # , then to convert to index
+            idx = np.argmax(annotation_file_train['attribute_strengths'][i, 1:])
             if idx == 0:
-                self._train_targets[i] = 1.0 # image1 has more strength
+                self._train_targets[i] = 1.0  # image1 has more strength
             elif idx == 1:
-                self._train_targets[i] = 0.0 # image1 has less strength
+                self._train_targets[i] = 0.0  # image1 has less strength
             else:
-                self._train_targets[i] = 0.5 # two images have about the same strength
-                
+                self._train_targets[i] = 0.5  # two images have about the same strength
+
         self._test_pairs = np.zeros((500, 2), dtype=np.int)
         self._test_targets = np.zeros((500,), dtype=np.float32)
         for i in xrange(500):
-            self._test_pairs[i, 0] = int(annotation_file_test['images_compare'][i,1][0][:-4]) - 1 # first to remove the '.jpg' part
-            self._test_pairs[i, 1] = int(annotation_file_test['images_compare'][i,2][0][:-4]) - 1 # , then to convert to index
-            idx = np.argmax(annotation_file_test['attribute_strengths'][i,1:])
+            self._test_pairs[i, 0] = int(annotation_file_test['images_compare'][i, 1][0][:-4]) - 1  # first to remove the '.jpg' part
+            self._test_pairs[i, 1] = int(annotation_file_test['images_compare'][i, 2][0][:-4]) - 1  # , then to convert to index
+            idx = np.argmax(annotation_file_test['attribute_strengths'][i, 1:])
             if idx == 0:
-                self._test_targets[i] = 1.0 # image1 has more strength
+                self._test_targets[i] = 1.0  # image1 has more strength
             elif idx == 1:
-                self._test_targets[i] = 0.0 # image1 has less strength
+                self._test_targets[i] = 0.0  # image1 has less strength
             else:
-                self._test_targets[i] = 0.5 # two images have about the same strength
-        
+                self._test_targets[i] = 0.5  # two images have about the same strength
+
         # fill place holders
-        self._image_adresses = [os.path.join(images_path, '{}.jpg'.format(p+1)) for p in xrange(2000)]
+        self._image_adresses = [os.path.join(images_path, '{}.jpg'.format(p + 1)) for p in xrange(2000)]
