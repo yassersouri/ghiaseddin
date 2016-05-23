@@ -29,6 +29,7 @@ class Extractor(object):
     _input_width = 224
     _input_raw_scale = 255
     _input_mean_to_subtract = [104, 117, 123]
+    NAME = "Extractor"
 
     def __init__(self, weights):
         self.weights = weights
@@ -84,15 +85,30 @@ class Extractor(object):
     def get_output_layer(self):
         return self.out_layer
 
+    def preprocess(self, batch):
+        batch_size = len(batch)
+        images = np.zeros((batch_size * 2, 3, self._input_height, self._input_width), dtype=np.float32)
+        annotations = np.zeros((batch_size), dtype=np.float32)
+        mask = np.ones((batch_size), dtype=np.int8)
+
+        for i, batch_item in enumerate(batch):
+            if batch_item is None:
+                mask[i] = 0
+                continue
+
+            (img1_path, img2_path), target = batch_item
+            images[2 * i, ...] = self._general_image_preprocess(utils.load_image(img1_path))
+            images[2 * i + 1, ...] = self._general_image_preprocess(utils.load_image(img2_path))
+
+        return images, annotations, mask
+
 
 class GoogLeNet(Extractor):
-    """
-    Todo: Add DropOut layers.
-    """
     _input_height = 224
     _input_width = 224
     _input_raw_scale = 255
     _input_mean_to_subtract = [104, 117, 123]
+    NAME = "GoogLeNet"
 
     def __init__(self, weights):
         super(GoogLeNet, self).__init__(weights)
@@ -160,6 +176,7 @@ class VGG16(Extractor):
     _input_raw_scale = 255
     _input_height = 224
     _input_width = 224
+    NAME = "VGG16"
 
     def __init__(self, weights):
         super(VGG16, self).__init__(weights)
@@ -202,6 +219,7 @@ class InceptionV3(Extractor):
     _input_width = 299
     _input_raw_scale = lambda x: 2 * x - 1
     _input_mean_to_subtract = [0, 0, 0]
+    NAME = "InceptionV3"
 
     def _general_image_preprocess(self, img):
         img = utils.resize_image(img, (self._input_height, self._input_height))
