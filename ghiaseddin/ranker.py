@@ -4,6 +4,12 @@ import theano.tensor as T
 import numpy as np
 from collections import OrderedDict
 from pastalog import Log
+from datetime import datetime as dt
+import logging
+import sys
+
+logging.basicConfig(level=logging.INFO, stream=sys.stdout)
+logger = logging.getLogger('Ghiaseddin')
 
 
 class Ghiaseddin(object):
@@ -70,11 +76,12 @@ class Ghiaseddin(object):
         Currently this is only a single dense layer with linear activation. This could easily be extended with more non-linearity.
         Should return the absolute rank estimate layer and all the parameters.
         """
-        absolute_rank_estimate_layer = lasagne.layers.DenseLayer(incoming=incoming, num_units=1, W=lasagne.init.GlorotUniform(), b=lasagne.init.Constant(val=0.0), nonlinearity=lasagne.nonlinearities.linear)
+        absolute_rank_estimate_layer = lasagne.layers.DenseLayer(incoming=incoming, num_units=1, W=lasagne.init.GlorotUniform(), b=lasagne.init.Constant(val=0.1), nonlinearity=lasagne.nonlinearities.linear)
         # Take care if you want to use multiple layers here you have to return all the params of all the layers
         return absolute_rank_estimate_layer, absolute_rank_estimate_layer.get_params()
 
     def _train_1_batch(self, preprocessed_input, step):
+        tic = dt.now()
         input_data, input_target, input_mask = preprocessed_input
         loss, xent_loss, l2_penalty = self.training_function(input_data, input_target)
 
@@ -82,15 +89,52 @@ class Ghiaseddin(object):
         self.pastalog.post('train_loss', value=float(loss), step=step)
         self.pastalog.post('train_xent', value=float(xent_loss), step=step)
         self.pastalog.post('train_l2pen', value=float(l2_penalty), step=step)
+        toc = dt.now()
 
+        logger.info("1 forward pass took: %s", str(toc - tic))
         return loss
 
     def train_one_epoch(self, add_step=0):
+        tic = dt.now()
         train_generator = self.dataset.train_generator(batch_size=self.train_batch_size, shuffle=True, cut_tail=True)
         losses = []
         for i, b in enumerate(train_generator):
             preprocessed_input = self.extractor.preprocess(b)
             batch_loss = self._train_1_batch(preprocessed_input, add_step + i)
             losses.append(batch_loss)
+        toc = dt.now()
 
+        logger.info("training for 1 epoch took: %s", str(toc - tic))
         return losses
+
+    def _test_rank_estimate(self, preprocessed_input):
+        input_data, input_target, input_mask = preprocessed_input
+        rank_estimates = self.testing_function(input_data)
+
+        return rank_estimates, input_target, input_mask
+
+    @staticmethod
+    def _estimates_to_target_estimates(estimates):
+        assert len(estimates) % 2 == 0
+        o1 = estimates[::2]
+        o2 = estimates[1::2]
+        posteriors = np.zeros_like(o1)
+        posteriors += (o1 == o2) * 0.5 + (o1 > o2) * 1
+        return posteriors.ravel()
+
+    def eval_accuracy(self):
+        test_generator = self.dataset.test_generator(batch_size=32)
+        total = 0
+        correct = 0
+
+        for batch in test_generator:
+            preprocessed_input = self.extractor.preprocess(batch)
+            estimates, target, mask = self._test_rank_estimate(preprocessed_input)
+
+            estimated_target = self._estimates_to_target_estimates(estimates)
+            for p, t, m in zip(estimated_target, target, mask):
+                if m and t != 0.5:
+                    total += 1
+                    if t == p:
+                        correct += 1
+        return float(correct) / total
