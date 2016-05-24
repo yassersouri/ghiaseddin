@@ -1,6 +1,7 @@
 import os
 import boltons.fileutils
 
+RANDOM_SEED = 1
 
 data_root = os.path.join(os.path.expanduser('~'), 'ghiaseddin')
 model_root = os.path.join(data_root, 'models')

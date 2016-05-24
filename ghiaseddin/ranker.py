@@ -6,6 +6,7 @@ from collections import OrderedDict
 from pastalog import Log
 from datetime import datetime as dt
 import logging
+import settings
 
 logger = logging.getLogger('Ghiaseddin')
 hdlr = logging.FileHandler('/var/tmp/Ghiaseddin.log')
@@ -17,21 +18,35 @@ logger.setLevel(logging.DEBUG)
 
 class Ghiaseddin(object):
     _epsilon = 1.0e-7
+    log_step = 0
 
-    def __init__(self, extractor, dataset, train_batch_size=16, extractor_learning_rate=0.0001, ranker_learning_rate=0.0001, weight_decay=0.005, optimizer=lasagne.updates.rmsprop):
+    def __init__(self, extractor, dataset, train_batch_size=16, extractor_learning_rate=1e-4, ranker_learning_rate=1e-4,
+                 weight_decay=1e-5, optimizer=lasagne.updates.rmsprop, ranker_nonlinearity=lasagne.nonlinearities.linear,
+                 RANDOM_SEED=None):
+
         self.train_batch_size = train_batch_size
         self.extractor = extractor
         self.dataset = dataset
         self.weight_decay = weight_decay
         self.optimizer = optimizer
+        self.ranker_nonlinearity = ranker_nonlinearity
 
-        self.NAME = "e:%s-d:%s-bs:%d-elr:%f-rlr:%f-opt:%s-wd:%f" % (self.extractor.__class__.__name__,
-                                                                    self.dataset.__class__.__name__,
-                                                                    self.train_batch_size,
-                                                                    extractor_learning_rate,
-                                                                    ranker_learning_rate,
-                                                                    self.optimizer.__name__,
-                                                                    self.weight_decay)
+        # setting the random seed
+        if not RANDOM_SEED:
+            RANDOM_SEED = settings.RANDOM_SEED
+        np.random.seed(RANDOM_SEED)
+        lasagne.random.set_rng(np.random.RandomState(RANDOM_SEED))
+
+        self.NAME = "e:%s-d:%s-bs:%d-elr:%f-rlr:%f-opt:%s-rnl:%s-wd:%f-rs:%s" % (self.extractor.__class__.__name__,
+                                                                                 self.dataset.__class__.__name__,
+                                                                                 self.train_batch_size,
+                                                                                 extractor_learning_rate,
+                                                                                 ranker_learning_rate,
+                                                                                 self.optimizer.__name__,
+                                                                                 self.ranker_nonlinearity.__name__,
+                                                                                 self.weight_decay,
+                                                                                 str(RANDOM_SEED))
+
         self.pastalog = Log('http://localhost:8100/', self.NAME)
 
         # TODO: check if converting these to shared variable actually improves performance.
@@ -91,27 +106,28 @@ class Ghiaseddin(object):
         # Take care if you want to use multiple layers here you have to return all the params of all the layers
         return absolute_rank_estimate_layer, absolute_rank_estimate_layer.get_params()
 
-    def _train_1_batch(self, preprocessed_input, step):
+    def _train_1_batch(self, preprocessed_input):
         tic = dt.now()
         input_data, input_target, input_mask = preprocessed_input
         loss, xent_loss, l2_penalty = self.training_function(input_data, input_target)
 
         # log the losses
-        self.pastalog.post('train_loss', value=float(loss), step=step)
-        self.pastalog.post('train_xent', value=float(xent_loss), step=step)
-        self.pastalog.post('train_l2pen', value=float(l2_penalty), step=step)
+        self.pastalog.post('train_loss', value=float(loss), step=self.log_step)
+        self.pastalog.post('train_xent', value=float(xent_loss), step=self.log_step)
+        self.pastalog.post('train_l2pen', value=float(l2_penalty), step=self.log_step)
         toc = dt.now()
 
+        self.log_step += 1
         logger.debug("1 minibatch took: %s", str(toc - tic))
         return loss
 
-    def train_one_epoch(self, add_step=0):
+    def train_one_epoch(self):
         tic = dt.now()
         train_generator = self.dataset.train_generator(batch_size=self.train_batch_size, shuffle=True, cut_tail=True)
         losses = []
         for i, b in enumerate(train_generator):
             preprocessed_input = self.extractor.preprocess(b)
-            batch_loss = self._train_1_batch(preprocessed_input, add_step + i)
+            batch_loss = self._train_1_batch(preprocessed_input)
             losses.append(batch_loss)
         toc = dt.now()
 
