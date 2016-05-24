@@ -6,10 +6,13 @@ from collections import OrderedDict
 from pastalog import Log
 from datetime import datetime as dt
 import logging
-import sys
 
-logging.basicConfig(level=logging.INFO, stream=sys.stdout)
 logger = logging.getLogger('Ghiaseddin')
+hdlr = logging.FileHandler('/var/tmp/Ghiaseddin.log')
+formatter = logging.Formatter('%(asctime)s %(levelname)s %(message)s')
+hdlr.setFormatter(formatter)
+logger.addHandler(hdlr)
+logger.setLevel(logging.DEBUG)
 
 
 class Ghiaseddin(object):
@@ -91,7 +94,7 @@ class Ghiaseddin(object):
         self.pastalog.post('train_l2pen', value=float(l2_penalty), step=step)
         toc = dt.now()
 
-        logger.info("1 forward pass took: %s", str(toc - tic))
+        logger.info("1 minibatch took: %s", str(toc - tic))
         return loss
 
     def train_one_epoch(self, add_step=0):
@@ -104,7 +107,7 @@ class Ghiaseddin(object):
             losses.append(batch_loss)
         toc = dt.now()
 
-        logger.info("training for 1 epoch took: %s", str(toc - tic))
+        logger.debug("Training for 1 epoch took: %s", str(toc - tic))
         return losses
 
     def _test_rank_estimate(self, preprocessed_input):
@@ -123,6 +126,7 @@ class Ghiaseddin(object):
         return posteriors.ravel()
 
     def eval_accuracy(self):
+        tic = dt.now()
         test_generator = self.dataset.test_generator(batch_size=32)
         total = 0
         correct = 0
@@ -137,4 +141,7 @@ class Ghiaseddin(object):
                     total += 1
                     if t == p:
                         correct += 1
+        toc = dt.now()
+
+        logger.debug("Evaluation took: %s", str(toc - tic))
         return float(correct) / total
