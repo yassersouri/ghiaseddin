@@ -31,7 +31,6 @@ class Dataset(object):
     _test_pairs = None
     _test_targets = None
     _image_adresses = None
-    NAME = "Dataset"
 
     def __init__(self, root, attribute_index):
         self.root = root
@@ -118,8 +117,6 @@ class Dataset(object):
 class Zappos50K1(Dataset):
     """The dataset helper class for Zappos50K-1, the coarse version of the dataset."""
 
-    NAME = "Zappos50K1"
-
     _ATT_NAMES = ['open', 'pointy', 'sporty', 'comfort']
 
     def __init__(self, root, attribute_index, split_index):
@@ -166,8 +163,6 @@ class Zappos50K1(Dataset):
 
 class LFW10(Dataset):
     """The dataset helper class for LFW-10 dataset."""
-
-    NAME = "LFW10"
 
     _ATT_NAMES = ['baldhead', 'darkhair', 'eyesopen', 'goodlooking', 'masculinelooking', 'mouthopen', 'smile', 'v_teeth', 'vforehead', 'young']
 

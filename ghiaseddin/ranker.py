@@ -18,13 +18,21 @@ logger.setLevel(logging.DEBUG)
 class Ghiaseddin(object):
     _epsilon = 1.0e-7
 
-    def __init__(self, extractor, dataset, train_batch_size=16, extractor_learning_rate=0.0001, ranker_learning_rate=0.0001, weight_decay=0.005):
+    def __init__(self, extractor, dataset, train_batch_size=16, extractor_learning_rate=0.0001, ranker_learning_rate=0.0001, weight_decay=0.005, optimizer=lasagne.updates.rmsprop):
         self.train_batch_size = train_batch_size
         self.extractor = extractor
         self.dataset = dataset
         self.weight_decay = weight_decay
+        self.optimizer = optimizer
 
-        self.pastalog = Log('http://localhost:8100/', "e:%s-d:%s-bs:%d-lr:%f" % (self.extractor.NAME, self.dataset.NAME, self.train_batch_size, ranker_learning_rate))
+        self.NAME = "e:%s-d:%s-bs:%d-elr:%f-rlr:%f-opt:%s-wd:%f" % (self.extractor.__class__.__name__,
+                                                                    self.dataset.__class__.__name__,
+                                                                    self.train_batch_size,
+                                                                    extractor_learning_rate,
+                                                                    ranker_learning_rate,
+                                                                    self.optimizer.__name__,
+                                                                    self.weight_decay)
+        self.pastalog = Log('http://localhost:8100/', self.NAME)
 
         # TODO: check if converting these to shared variable actually improves performance.
         self.input_var = T.ftensor4('inputs')
@@ -51,7 +59,7 @@ class Ghiaseddin(object):
 
         self.xent_loss = lasagne.objectives.binary_crossentropy(self.predictions, self.target_var).mean()
         self.l2_penalty = lasagne.regularization.regularize_network_params(self.absolute_rank_estimate, lasagne.regularization.l2)
-        self.loss = self.xent_loss + self.l2_penalty * weight_decay
+        self.loss = self.xent_loss + self.l2_penalty * self.weight_decay
 
         self.test_absolute_rank_estimate = lasagne.layers.get_output(self.absolute_rank_estimate, deterministic=True)
 
@@ -61,8 +69,8 @@ class Ghiaseddin(object):
         """
         Will be creating theano functions for training and testing
         """
-        self._feature_extractor_updates = lasagne.updates.rmsprop(self.loss, self.extractor_params, learning_rate=self.extractor_learning_rate_shared_var)
-        self._ranker_updates = lasagne.updates.rmsprop(self.loss, self.ranker_params, learning_rate=self.ranker_learning_rate_shared_var)
+        self._feature_extractor_updates = self.optimizer(self.loss, self.extractor_params, learning_rate=self.extractor_learning_rate_shared_var)
+        self._ranker_updates = self.optimizer(self.loss, self.ranker_params, learning_rate=self.ranker_learning_rate_shared_var)
 
         f = self._feature_extractor_updates.items()
         r = self._ranker_updates.items()
@@ -94,7 +102,7 @@ class Ghiaseddin(object):
         self.pastalog.post('train_l2pen', value=float(l2_penalty), step=step)
         toc = dt.now()
 
-        logger.info("1 minibatch took: %s", str(toc - tic))
+        logger.debug("1 minibatch took: %s", str(toc - tic))
         return loss
 
     def train_one_epoch(self, add_step=0):
@@ -107,7 +115,7 @@ class Ghiaseddin(object):
             losses.append(batch_loss)
         toc = dt.now()
 
-        logger.debug("Training for 1 epoch took: %s", str(toc - tic))
+        logger.info("Training for 1 epoch took: %s", str(toc - tic))
         return losses
 
     def _test_rank_estimate(self, preprocessed_input):
@@ -143,5 +151,5 @@ class Ghiaseddin(object):
                         correct += 1
         toc = dt.now()
 
-        logger.debug("Evaluation took: %s", str(toc - tic))
+        logger.info("Evaluation took: %s", str(toc - tic))
         return float(correct) / total
