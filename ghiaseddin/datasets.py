@@ -168,6 +168,7 @@ class LFW10(Dataset):
 
     def __init__(self, root, attribute_index):
         super(LFW10, self).__init__(root, attribute_index)
+        # TODO: Check this out again
         self.root = os.path.join(self.root, 'LFW10')
 
         data_path = os.path.join(self.root, 'annotations')
@@ -205,3 +206,16 @@ class LFW10(Dataset):
         
         # fill place holders
         self._image_adresses = [os.path.join(images_path, '{}.jpg'.format(p+1)) for p in xrange(2000)]
+
+class PubFig(Dataset):
+    """The dataset helper class for PubFig dataset."""
+    
+    def __init__(self, root, attribute_index):
+        super(PubFig, self).__init__(root, attribute_index)
+        
+        data_path = self.root
+        images_path = os.path.join(self.root, 'images')
+        
+        data_file = scipy.io.loadmat(os.path.join(data_path, 'data.mat'))
+        self._ATT_NAMES = map(lambda x: x[0], data_file['attribute_names'][0])
+        
