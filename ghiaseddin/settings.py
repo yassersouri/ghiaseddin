@@ -1,7 +1,11 @@
 import os
 import boltons.fileutils
+import numpy as np
+import lasagne
 
-RANDOM_SEED = 1
+RANDOM_SEED = 0
+np.random.seed(RANDOM_SEED)
+lasagne.random.set_rng(np.random)
 
 data_root = os.path.join(os.path.expanduser('~'), 'ghiaseddin')
 model_root = os.path.join(data_root, 'models')

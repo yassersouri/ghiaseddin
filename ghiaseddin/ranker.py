@@ -7,6 +7,7 @@ from pastalog import Log
 from datetime import datetime as dt
 import logging
 import settings
+import os
 
 logger = logging.getLogger('Ghiaseddin')
 hdlr = logging.FileHandler('/var/tmp/Ghiaseddin.log')
@@ -31,12 +32,6 @@ class Ghiaseddin(object):
         self.optimizer = optimizer
         self.ranker_nonlinearity = ranker_nonlinearity
 
-        # setting the random seed
-        if not RANDOM_SEED:
-            RANDOM_SEED = settings.RANDOM_SEED
-        np.random.seed(RANDOM_SEED)
-        lasagne.random.set_rng(np.random.RandomState(RANDOM_SEED))
-
         self.NAME = "e:%s-d:%s-bs:%d-elr:%f-rlr:%f-opt:%s-rnl:%s-wd:%f-rs:%s" % (self.extractor.__class__.__name__,
                                                                                  self.dataset.__class__.__name__,
                                                                                  self.train_batch_size,
@@ -45,7 +40,7 @@ class Ghiaseddin(object):
                                                                                  self.optimizer.__name__,
                                                                                  self.ranker_nonlinearity.__name__,
                                                                                  self.weight_decay,
-                                                                                 str(RANDOM_SEED))
+                                                                                 str(settings.RANDOM_SEED))
 
         self.pastalog = Log('http://localhost:8100/', self.NAME)
 
@@ -61,7 +56,7 @@ class Ghiaseddin(object):
 
         self.extractor_params = lasagne.layers.get_all_params(self.extractor_layer, trainable=True)
 
-        self.absolute_rank_estimate, self.ranker_params = self._absolute_rank_estimate(self.extractor_layer)
+        self.absolute_rank_estimate, self.ranker_params = self._create_absolute_rank_estimate(self.extractor_layer)
         self.reshaped_input = lasagne.layers.ReshapeLayer(self.absolute_rank_estimate, (-1, 2))
 
         # the posterior estimate layer is not trainable
