@@ -22,8 +22,7 @@ class Ghiaseddin(object):
     log_step = 0
 
     def __init__(self, extractor, dataset, train_batch_size=16, extractor_learning_rate=1e-4, ranker_learning_rate=1e-4,
-                 weight_decay=1e-5, optimizer=lasagne.updates.rmsprop, ranker_nonlinearity=lasagne.nonlinearities.linear,
-                 RANDOM_SEED=None):
+                 weight_decay=1e-5, optimizer=lasagne.updates.rmsprop, ranker_nonlinearity=lasagne.nonlinearities.linear, debug=False):
 
         self.train_batch_size = train_batch_size
         self.extractor = extractor
@@ -31,9 +30,12 @@ class Ghiaseddin(object):
         self.weight_decay = weight_decay
         self.optimizer = optimizer
         self.ranker_nonlinearity = ranker_nonlinearity
+        self.extractor_learning_rate = extractor_learning_rate
+        self.ranker_learning_rate = ranker_learning_rate
+        self.debug = debug
 
         self.NAME = "e:%s-d:%s-bs:%d-elr:%f-rlr:%f-opt:%s-rnl:%s-wd:%f-rs:%s" % (self.extractor.__class__.__name__,
-                                                                                 self.dataset.__class__.__name__,
+                                                                                 self.dataset.get_name(),
                                                                                  self.train_batch_size,
                                                                                  extractor_learning_rate,
                                                                                  ranker_learning_rate,
@@ -79,8 +81,15 @@ class Ghiaseddin(object):
         """
         Will be creating theano functions for training and testing
         """
-        self._feature_extractor_updates = self.optimizer(self.loss, self.extractor_params, learning_rate=self.extractor_learning_rate_shared_var)
-        self._ranker_updates = self.optimizer(self.loss, self.ranker_params, learning_rate=self.ranker_learning_rate_shared_var)
+        if self.extractor_learning_rate != 0:
+            self._feature_extractor_updates = self.optimizer(self.loss, self.extractor_params, learning_rate=self.extractor_learning_rate_shared_var)
+        else:
+            self._feature_extractor_updates = OrderedDict()
+
+        if self.ranker_learning_rate != 0:
+            self._ranker_updates = self.optimizer(self.loss, self.ranker_params, learning_rate=self.ranker_learning_rate_shared_var)
+        else:
+            self._ranker_updates = OrderedDict()
 
         f = self._feature_extractor_updates.items()
         r = self._ranker_updates.items()
@@ -91,7 +100,7 @@ class Ghiaseddin(object):
         self.training_function = theano.function([self.input_var, self.target_var], [self.loss, self.xent_loss, self.l2_penalty], updates=self._all_updates)
         self.testing_function = theano.function([self.input_var], self.test_absolute_rank_estimate)
 
-    def _absolute_rank_estimate(self, incoming):
+    def _create_absolute_rank_estimate(self, incoming):
         """
         An abstraction around the absolute rank estimate.
         Currently this is only a single dense layer with linear activation. This could easily be extended with more non-linearity.
@@ -113,7 +122,8 @@ class Ghiaseddin(object):
         toc = dt.now()
 
         self.log_step += 1
-        logger.debug("1 minibatch took: %s", str(toc - tic))
+        if self.debug:
+            logger.debug("1 minibatch took: %s", str(toc - tic))
         return loss
 
     def train_one_epoch(self):
@@ -126,8 +136,13 @@ class Ghiaseddin(object):
             losses.append(batch_loss)
         toc = dt.now()
 
-        logger.info("Training for 1 epoch took: %s", str(toc - tic))
+        if self.debug:
+            logger.info("Training for 1 epoch took: %s", str(toc - tic))
         return losses
+
+    def train_n_epoch(self, n):
+        for _ in range(n):
+            self.train_one_epoch()
 
     def _test_rank_estimate(self, preprocessed_input):
         input_data, input_target, input_mask = preprocessed_input
@@ -162,5 +177,23 @@ class Ghiaseddin(object):
                         correct += 1
         toc = dt.now()
 
-        logger.info("Evaluation took: %s", str(toc - tic))
+        if self.debug:
+            logger.info("Evaluation took: %s", str(toc - tic))
         return float(correct) / total
+
+    def _model_name_from_settings(self):
+        return os.path.join(settings.model_root, "%s.npz" % self.NAME)
+
+    def save(self, path=None):
+        if not path:
+            path = self._model_name_from_settings()
+
+        np.savez(path, params=lasagne.layers.get_all_param_values(self.absolute_rank_estimate))
+
+    def load(self, path=None):
+        if not path:
+            path = self._model_name_from_settings()
+
+        with np.load(path) as data:
+            loaded_from_file = data['params']
+        lasagne.layers.set_all_param_values(self.absolute_rank_estimate, loaded_from_file)
