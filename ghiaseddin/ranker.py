@@ -201,3 +201,12 @@ class Ghiaseddin(object):
         with np.load(path) as data:
             loaded_from_file = data['params']
         lasagne.layers.set_all_param_values(self.absolute_rank_estimate, loaded_from_file)
+
+    def generate_misclassified(self):
+        pass
+
+    def generate_saliency(self):
+        pass
+
+    def generate_embedding(self):
+        pass
