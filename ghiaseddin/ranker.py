@@ -8,6 +8,10 @@ from datetime import datetime as dt
 import logging
 import settings
 import os
+import utils
+import matplotlib.pylab as plt
+import boltons
+
 
 logger = logging.getLogger('Ghiaseddin')
 hdlr = logging.FileHandler('/var/tmp/Ghiaseddin.log')
@@ -21,7 +25,7 @@ class Ghiaseddin(object):
     _epsilon = 1.0e-7
     log_step = 0
 
-    def __init__(self, extractor, dataset, train_batch_size=16, extractor_learning_rate=1e-4, ranker_learning_rate=1e-4,
+    def __init__(self, extractor, dataset, train_batch_size=16, extractor_learning_rate=1e-5, ranker_learning_rate=1e-4,
                  weight_decay=1e-5, optimizer=lasagne.updates.rmsprop, ranker_nonlinearity=lasagne.nonlinearities.linear, debug=False):
 
         self.train_batch_size = train_batch_size
@@ -161,7 +165,7 @@ class Ghiaseddin(object):
 
     def eval_accuracy(self):
         tic = dt.now()
-        test_generator = self.dataset.test_generator(batch_size=32)
+        test_generator = self.dataset.test_generator(batch_size=self.train_batch_size)
         total = 0
         correct = 0
 
@@ -195,15 +199,67 @@ class Ghiaseddin(object):
         np.savez(path, params=lasagne.layers.get_all_param_values(self.absolute_rank_estimate))
 
     def load(self, path=None):
+        """
+        Loads the model which is trained for the most iterations
+        """
         if not path:
-            path = self._model_name_from_settings()
+            list_of_models = os.listdir(settings.result_models_root)
+
+            most_iters = 0
+            the_better_model = ''
+
+            for model in list_of_models:
+                if model.startswith(self.NAME) and model.endswith('.npz'):
+                    parts = model.split('-')
+                    current_iter = int(parts[-1][:-4])
+                    if current_iter > most_iters:
+                        most_iters = current_iter
+                        the_better_model = model
+            path = os.path.join(settings.result_models_root, the_better_model)
+            self.log_step = most_iters
 
         with np.load(path) as data:
             loaded_from_file = data['params']
         lasagne.layers.set_all_param_values(self.absolute_rank_estimate, loaded_from_file)
 
     def generate_misclassified(self):
-        pass
+        test_generator = self.dataset.test_generator(batch_size=self.train_batch_size)
+
+        folder_path = os.path.join(settings.result_models_root, self._current_name())
+        boltons.fileutils.mkdir_p(folder_path)
+
+        num = 0
+        for batch in test_generator:
+            preprocessed_input = self.extractor.preprocess(batch)
+            estimates, target, mask = self._test_rank_estimate(preprocessed_input)
+
+            estimated_target = self._estimates_to_target_estimates(estimates)
+            for p, t, m, i in zip(estimated_target, target, mask, batch):
+                if m and t != 0.5:
+                    if t != p:
+                        (img1_path, img2_path), truth = i
+                        img1 = utils.load_image(img1_path)
+                        img2 = utils.load_image(img2_path)
+
+                        fig = plt.figure(figsize=(10, 5))
+                        ax1 = fig.add_subplot(121)
+                        ax2 = fig.add_subplot(122)
+
+                        ax1.imshow(img1)
+                        ax1.axis('off')
+                        ax1.set_title('A')
+                        ax2.imshow(img2)
+                        ax2.axis('off')
+                        ax2.set_title('B')
+
+                        attribute_name = self.dataset._ATT_NAMES[self.dataset.attribute_index]
+                        truth_thing = '>' if t == 1 else '<'
+                        estimated_thing = '>' if p == 1 else '<'
+                        plt.suptitle("Attribute: %s | Truth: %s | Estimated: %s" % (attribute_name, truth_thing, estimated_thing))
+
+                        plt.savefig(os.path.join(folder_path, '%d.png' % num))
+                        plt.close()
+                        num += 1
 
     def generate_saliency(self):
         pass
