@@ -37,6 +37,9 @@ class Dataset(object):
         self.attribute_index = attribute_index
         assert 0 <= attribute_index < len(self._ATT_NAMES)
 
+    def get_name(self):
+        return "Zap1-%d" % (self.attribute_index)
+
     def _show_image_path_target(self, img1_path, img2_path, target):
         if target > 0.5:
             print 'A is more %s than B (t: %2.2f)' % (self._ATT_NAMES[self.attribute_index], target)
@@ -146,6 +149,9 @@ class Zappos50K1(Dataset):
         self._image_adresses = [os.path.join(images_path, p[0]) for p in imagepath_info]
         self._fill_pair_target(train_index, image_pairs_order, self._train_pairs, self._train_targets)
         self._fill_pair_target(test_index, image_pairs_order, self._test_pairs, self._test_targets)
+
+    def get_name(self):
+        return "Zap1-%d-%d" % (self.attribute_index, self.split_index)
 
     def _fill_pair_target(self, indexes, pair_order, pairs, targets):
         for i, id in enumerate(indexes):
