@@ -211,3 +211,97 @@ class LFW10(Dataset):
 
         # fill place holders
         self._image_adresses = [os.path.join(images_path, '{}.jpg'.format(p + 1)) for p in xrange(2000)]
+
+
+class PubFig(Dataset):
+    """The dataset helper class for PubFig dataset."""
+
+    _ATT_NAMES = ['Male', 'White', 'Young', 'Smiling', 'Chubby', 'VisibleForehead', 'BushyEyebrows', 'NarrowEyes', 'PointyNose', 'BigLips', 'RoundFace']
+
+    def __init__(self, root, attribute_index):
+        super(PubFig, self).__init__(root, attribute_index)
+
+        data_path = self.root
+        images_path = os.path.join(self.root, 'images')
+        data_file = scipy.io.loadmat(os.path.join(data_path, 'data.mat'), appendmat=False)
+        # self._ATT_NAMES = map(lambda x: x[0], data_file['attribute_names'][0])
+        im_names = data_file['im_names'].squeeze()
+        self._image_adresses = [os.path.join(images_path, im_names[i][0]) for i in xrange(len(im_names))]
+        class_labels = data_file['class_labels'][:, 0]
+        used_for_training = data_file['used_for_training'][:, 0]
+
+        X = np.arange(len(im_names), dtype=np.int)
+        y = np.zeros((len(im_names), len(self._ATT_NAMES)), dtype=np.int)
+        for i in xrange(len(im_names)):
+            y[i, :] = data_file['relative_ordering'][:, class_labels[i] - 1]
+        Xtrain = X[np.where(used_for_training)]
+        Xtest = X[np.where(used_for_training - 1)]
+        ytrain = y[np.where(used_for_training)]
+        ytest = y[np.where(used_for_training - 1)]
+
+        idxs = list(itertools.combinations(range(len(Xtrain)), 2))
+        self._train_pairs = np.zeros((len(idxs), 2), dtype=np.int)
+        self._train_targets = np.zeros((len(idxs),), dtype=np.float32)
+        for cnt, ij in enumerate(idxs):
+            i, j = ij
+            self._train_pairs[cnt][0] = Xtrain[i]
+            self._train_pairs[cnt][1] = Xtrain[j]
+            self._train_targets[cnt] = (ytrain[i, attribute_index] == ytrain[j, attribute_index]) * 0.5 +\
+                                       (ytrain[i, attribute_index] > ytrain[j, attribute_index]) * 1.0
+
+        idxs = list(itertools.combinations(range(len(Xtest)), 2))
+        self._test_pairs = np.zeros((len(idxs), 2), dtype=np.int)
+        self._test_targets = np.zeros((len(idxs),), dtype=np.float32)
+        for cnt, ij in enumerate(idxs):
+            i, j = ij
+            self._test_pairs[cnt][0] = Xtest[i]
+            self._test_pairs[cnt][1] = Xtest[j]
+            self._test_targets[cnt] = (ytest[i, attribute_index] == ytest[j, attribute_index]) * 0.5 +\
+                                      (ytest[i, attribute_index] > ytest[j, attribute_index]) * 1.0
+
+
+class OSR(Dataset):
+    """The dataset helper class for OSR dataset."""
+
+    _ATT_NAMES = ['natural', 'open', 'perspective', 'size-large', 'diagonal-plane', 'depth-close']
+
+    def __init__(self, root, attribute_index):
+        super(OSR, self).__init__(root, attribute_index)
+
+        data_path = self.root
+        images_path = os.path.join(self.root, 'spatial_envelope_256x256_static_8outdoorcategories')
+        data_file = scipy.io.loadmat(os.path.join(data_path, 'data.mat'), appendmat=False)
+        # self._ATT_NAMES = map(lambda x: x[0], data_file['attribute_names'][0])
+        im_names = data_file['im_names'].squeeze()
+        self._image_adresses = [os.path.join(images_path, im_names[i][0]) for i in xrange(len(im_names))]
+        class_labels = data_file['class_labels'][:, 0]
+        used_for_training = data_file['used_for_training'][:, 0]
+
+        X = np.arange(len(im_names), dtype=np.int)
+        y = np.zeros((len(im_names), len(self._ATT_NAMES)), dtype=np.int)
+        for i in xrange(len(im_names)):
+            y[i, :] = data_file['relative_ordering'][:, class_labels[i] - 1]
+        Xtrain = X[np.where(used_for_training)]
+        Xtest = X[np.where(used_for_training - 1)]
+        ytrain = y[np.where(used_for_training)]
+        ytest = y[np.where(used_for_training - 1)]
+
+        idxs = list(itertools.combinations(range(len(Xtrain)), 2))
+        self._train_pairs = np.zeros((len(idxs), 2), dtype=np.int)
+        self._train_targets = np.zeros((len(idxs),), dtype=np.float32)
+        for cnt, ij in enumerate(idxs):
+            i, j = ij
+            self._train_pairs[cnt][0] = Xtrain[i]
+            self._train_pairs[cnt][1] = Xtrain[j]
+            self._train_targets[cnt] = (ytrain[i, attribute_index] == ytrain[j, attribute_index]) * 0.5 +\
+                                       (ytrain[i, attribute_index] > ytrain[j, attribute_index]) * 1.0
+
+        idxs = list(itertools.combinations(range(len(Xtest)), 2))
+        self._test_pairs = np.zeros((len(idxs), 2), dtype=np.int)
+        self._test_targets = np.zeros((len(idxs),), dtype=np.float32)
+        for cnt, ij in enumerate(idxs):
+            i, j = ij
+            self._test_pairs[cnt][0] = Xtest[i]
+            self._test_pairs[cnt][1] = Xtest[j]
+            self._test_targets[cnt] = (ytest[i, attribute_index] == ytest[j, attribute_index]) * 0.5 +\
+                                      (ytest[i, attribute_index] > ytest[j, attribute_index]) * 1.0
