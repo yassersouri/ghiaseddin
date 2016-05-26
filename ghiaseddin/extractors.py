@@ -42,10 +42,10 @@ class Extractor(object):
         return init_weights
 
     def set_input_var(self, input_var, batch_size=None):
-        # TODO: Are we sure this works? Because we are going to call this function after we have called the init.
-        input_layer_size = self.net[self.INPUT_LAYER_NAME].shape
-        input_layer_size[0] = batch_size
-        self.net[self.INPUT_LAYER_NAME] = lasagne.layers.InputLayer(input_layer_size, input_var=input_var)
+        input_layer_shape = list(self.net[self.INPUT_LAYER_NAME].shape)
+        input_layer_shape[0] = batch_size
+        self.net[self.INPUT_LAYER_NAME].input_var = input_var
+        self.net[self.INPUT_LAYER_NAME].shape = tuple(input_layer_shape)
 
     def _general_image_preprocess(self, img):
         img = utils.resize_image(img, (self._input_height, self._input_height))
@@ -82,14 +82,29 @@ class Extractor(object):
 
         return out.eval({inp: data}).flatten()
 
-    def get_output_function(self):
-        pass
+    def get_output_layer(self):
+        return self.out_layer
+
+    def preprocess(self, batch):
+        batch_size = len(batch)
+        images = np.zeros((batch_size * 2, 3, self._input_height, self._input_width), dtype=np.float32)
+        annotations = np.zeros((batch_size), dtype=np.float32)
+        mask = np.ones((batch_size), dtype=np.int8)
+
+        for i, batch_item in enumerate(batch):
+            if batch_item is None:
+                mask[i] = 0
+                continue
+
+            (img1_path, img2_path), target = batch_item
+            images[2 * i, ...] = self._general_image_preprocess(utils.load_image(img1_path))
+            images[2 * i + 1, ...] = self._general_image_preprocess(utils.load_image(img2_path))
+            annotations[i] = target
+
+        return images, annotations, mask
 
 
 class GoogLeNet(Extractor):
-    """
-    Todo: Add DropOut layers.
-    """
     _input_height = 224
     _input_width = 224
     _input_raw_scale = 255
