@@ -210,19 +210,17 @@ class LFW10(Dataset):
 class PubFig(Dataset):
     """The dataset helper class for PubFig dataset."""
 
-    _ATT_NAMES = ['Male', 'White', 'Young', 'Smiling', 'Chubby', 'VisibleForehead', 'BushyEyebrows',\
-                  'NarrowEyes', 'PointyNose', 'BigLips',  'RoundFace']
+    _ATT_NAMES = ['Male', 'White', 'Young', 'Smiling', 'Chubby', 'VisibleForehead', 'BushyEyebrows', 'NarrowEyes', 'PointyNose', 'BigLips', 'RoundFace']
+
     def __init__(self, root, attribute_index):
         super(PubFig, self).__init__(root, attribute_index)
 
         data_path = self.root
         images_path = os.path.join(self.root, 'images')
-        
         data_file = scipy.io.loadmat(os.path.join(data_path, 'data.mat'), appendmat=False)
         # self._ATT_NAMES = map(lambda x: x[0], data_file['attribute_names'][0])
         im_names = data_file['im_names'].squeeze()
-        self._image_adresses = [os.path.join(images_path, im_names[i][0]) \
-                                for i in xrange(len(im_names))]
+        self._image_adresses = [os.path.join(images_path, im_names[i][0]) for i in xrange(len(im_names))]
         class_labels = data_file['class_labels'][:, 0]
         used_for_training = data_file['used_for_training'][:, 0]
 
@@ -260,17 +258,16 @@ class OSR(Dataset):
     """The dataset helper class for OSR dataset."""
 
     _ATT_NAMES = ['natural', 'open', 'perspective', 'size-large', 'diagonal-plane', 'depth-close']
+
     def __init__(self, root, attribute_index):
         super(OSR, self).__init__(root, attribute_index)
 
         data_path = self.root
         images_path = os.path.join(self.root, 'spatial_envelope_256x256_static_8outdoorcategories')
-        
         data_file = scipy.io.loadmat(os.path.join(data_path, 'data.mat'), appendmat=False)
         # self._ATT_NAMES = map(lambda x: x[0], data_file['attribute_names'][0])
         im_names = data_file['im_names'].squeeze()
-        self._image_adresses = [os.path.join(images_path, im_names[i][0]) \
-                                for i in xrange(len(im_names))]
+        self._image_adresses = [os.path.join(images_path, im_names[i][0]) for i in xrange(len(im_names))]
         class_labels = data_file['class_labels'][:, 0]
         used_for_training = data_file['used_for_training'][:, 0]
 
