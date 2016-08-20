@@ -11,8 +11,9 @@ import ghiaseddin
 @click.argument('dataset', type=click.Choice(['zappos1', 'lfw']))
 @click.argument('attribute', type=click.INT)
 @click.argument('epochs', type=click.INT)
-def main(dataset, attribute, epochs):
-    si = 0
+@click.argument('attribute_split', type=click.INT)
+def main(dataset, attribute, epochs, attribute_split):
+    si = attribute_split
 
     if dataset == 'zappos1':
         dataset = ghiaseddin.Zappos50K1(ghiaseddin.settings.zappos_root, attribute_index=attribute, split_index=si)

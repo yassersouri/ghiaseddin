@@ -85,6 +85,15 @@ class Extractor(object):
     def get_output_layer(self):
         return self.out_layer
 
+    def get_output_function(self, layer=None):
+        inp = lasagne.utils.T.tensor4('inp')
+        self.set_input_var(inp, batch_size=1)
+        if layer is None:
+            layer = self.out_layer
+        out = lasagne.layers.get_output(layer, inputs=inp, deterministic=True)
+
+        return lasagne.utils.theano.function([inp], [out])
+
     def preprocess(self, batch):
         batch_size = len(batch)
         images = np.zeros((batch_size * 2, 3, self._input_height, self._input_width), dtype=np.float32)
@@ -237,7 +246,6 @@ class InceptionV3(Extractor):
             l = lasagne.layers.BatchNormLayer(l, epsilon=0.001)
             return l
 
-
         def inceptionA(input_layer, nfilt):
             # Corresponds to a modified version of figure 5 in the paper
             l1 = bn_conv(input_layer, num_filters=nfilt[0][0], filter_size=1)
@@ -255,7 +263,6 @@ class InceptionV3(Extractor):
 
             return lasagne.layers.ConcatLayer([l1, l2, l3, l4])
 
-
         def inceptionB(input_layer, nfilt):
             # Corresponds to a modified version of figure 10 in the paper
             l1 = bn_conv(input_layer, num_filters=nfilt[0][0], filter_size=3, stride=2)
@@ -267,7 +274,6 @@ class InceptionV3(Extractor):
             l3 = Pool2DLayer(input_layer, pool_size=3, stride=2)
 
             return lasagne.layers.ConcatLayer([l1, l2, l3])
-
 
         def inceptionC(input_layer, nfilt):
             # Corresponds to figure 6 in the paper
@@ -289,7 +295,6 @@ class InceptionV3(Extractor):
 
             return lasagne.layers.ConcatLayer([l1, l2, l3, l4])
 
-
         def inceptionD(input_layer, nfilt):
             # Corresponds to a modified version of figure 10 in the paper
             l1 = bn_conv(input_layer, num_filters=nfilt[0][0], filter_size=1)
@@ -303,7 +308,6 @@ class InceptionV3(Extractor):
             l3 = Pool2DLayer(input_layer, pool_size=3, stride=2)
 
             return lasagne.layers.ConcatLayer([l1, l2, l3])
-
 
         def inceptionE(input_layer, nfilt, pool_mode):
             # Corresponds to figure 7 in the paper
@@ -327,8 +331,7 @@ class InceptionV3(Extractor):
 
         net = {}
         net['input'] = lasagne.layers.InputLayer((None, 3, 299, 299))
-        net['conv'] = bn_conv(net['input'],
-                            num_filters=32, filter_size=3, stride=2)
+        net['conv'] = bn_conv(net['input'], num_filters=32, filter_size=3, stride=2)
         net['conv_1'] = bn_conv(net['conv'], num_filters=32, filter_size=3)
         net['conv_2'] = bn_conv(net['conv_1'],
                                 num_filters=64, filter_size=3, pad=1)

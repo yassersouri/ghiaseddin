@@ -38,7 +38,7 @@ class Dataset(object):
         assert 0 <= attribute_index < len(self._ATT_NAMES)
 
     def get_name(self):
-        return "Zap1-%d" % (self.attribute_index)
+        return "%s-%d" % (self.__class__.__name__, self.attribute_index)
 
     def _show_image_path_target(self, img1_path, img2_path, target):
         if target > 0.5:

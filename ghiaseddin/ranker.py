@@ -170,6 +170,7 @@ class Ghiaseddin(object):
             estimates, target, mask = self._test_rank_estimate(preprocessed_input)
 
             estimated_target = self._estimates_to_target_estimates(estimates)
+            # TODO: this for loop could be speeded up with array operations instead of for
             for p, t, m in zip(estimated_target, target, mask):
                 if m and t != 0.5:
                     total += 1
