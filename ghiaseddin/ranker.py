@@ -183,10 +183,10 @@ class Ghiaseddin(object):
         return float(correct) / total
 
     def _model_name_with_iter(self):
-        return "%s-iter:%d" % self.log_step
+        return "%s-iter:%d" % (self.NAME, self.log_step)
 
     def _model_name_from_settings(self):
-        return os.path.join(settings.model_root, "%s.npz" % (self.NAME, self._model_name_with_iter()))
+        return os.path.join(settings.model_root, "%s.npz" % (self._model_name_with_iter()))
 
     def save(self, path=None):
         if not path:

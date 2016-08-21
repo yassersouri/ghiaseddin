@@ -40,7 +40,7 @@ def main(dataset, attribute, epochs, attribute_split):
     accuracies = []
     for _ in range(epochs):
         model.train_one_epoch()
-        acc = model.eval_accuracy()
+        acc = model.eval_accuracy() * 100
         accuracies.append(acc)
         sys.stdout.write("%2.4f\n" % acc)
         sys.stdout.flush()
@@ -49,7 +49,7 @@ def main(dataset, attribute, epochs, attribute_split):
 
     # Save raw accuracy values to file
     boltons.fileutils.mkdir_p(ghiaseddin.settings.result_models_root)
-    with(open(os.path.join(ghiaseddin.settings.result_models_root, 'acc|%s' % model.NAME), 'w')) as f:
+    with(open(os.path.join(ghiaseddin.settings.result_models_root, 'acc|%s' % model._model_name_with_iter()), 'w')) as f:
         f.write('\n'.join(["%2.4f" % a for a in accuracies]))
         f.write('\n')
 
