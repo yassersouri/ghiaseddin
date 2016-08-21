@@ -5,6 +5,7 @@ sys.path.append(os.path.dirname(os.path.dirname(__name__)))
 from datetime import datetime as dt
 import lasagne
 import ghiaseddin
+import boltons.fileutils
 
 
 @click.command()
@@ -29,17 +30,29 @@ def main(dataset, attribute, epochs, attribute_split):
     model = ghiaseddin.Ghiaseddin(extractor=googlenet,
                                   dataset=dataset,
                                   weight_decay=1e-5,
-                                  optimizer=lasagne.updates.sgd,
+                                  optimizer=lasagne.updates.rmsprop,
                                   ranker_learning_rate=1e-4,
                                   extractor_learning_rate=0,
                                   ranker_nonlinearity=lasagne.nonlinearities.linear)
 
+    model.NAME = "baseline|%s" % model.NAME
+
+    accuracies = []
     for _ in range(epochs):
         model.train_one_epoch()
-        sys.stdout.write("%2.4f\n" % model.eval_accuracy())
+        acc = model.eval_accuracy()
+        accuracies.append(acc)
+        sys.stdout.write("%2.4f\n" % acc)
         sys.stdout.flush()
 
     model.save()
+
+    # Save raw accuracy values to file
+    boltons.fileutils.mkdir_p(ghiaseddin.settings.result_models_root)
+    with(open(os.path.join(ghiaseddin.settings.result_models_root, 'acc|%s' % model.NAME), 'w')) as f:
+        f.write('\n'.join(["%2.4f" % a for a in accuracies]))
+        f.write('\n')
+
     toc = dt.now()
     print 'Took: %s' % (str(toc - tic))
 
