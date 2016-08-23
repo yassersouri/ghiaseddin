@@ -104,7 +104,7 @@ class Dataset(object):
         else:
             return to_return
 
-    def test_generator(self, batch_size):
+    def test_generator(self, batch_size, shuffle=False):
         """
         Similar to `train_generator` but for the test set.
 
@@ -113,6 +113,10 @@ class Dataset(object):
         The user of the dataset must take care of these `None` values.
         """
         indices = np.arange(len(self._test_targets))
+
+        if shuffle:
+            # shuffle the indices in-place
+            np.random.shuffle(indices)
 
         return boltons.iterutils.chunked_iter(self._iterate_pair_target(indices, self._test_pairs, self._test_targets), batch_size, fill=None)
 

@@ -144,6 +144,23 @@ class Ghiaseddin(object):
         for _ in range(n):
             self.train_one_epoch()
 
+    def train_n_iter(self, n):
+        losses = []
+        current_iter = 0
+        total_epochs = 0
+        while True:
+            train_generator = self.dataset.train_generator(batch_size=self.train_batch_size, shuffle=True, cut_tail=True)
+            for i, b in enumerate(train_generator):
+                preprocessed_input = self.extractor.preprocess(b)
+                batch_loss = self._train_1_batch(preprocessed_input)
+                losses.append(batch_loss)
+                current_iter += 1
+                if current_iter >= n:
+                    break
+            total_epochs += 1
+
+        return losses, total_epochs
+
     def _test_rank_estimate(self, preprocessed_input):
         input_data, input_target, input_mask = preprocessed_input
         rank_estimates = self.testing_function(input_data)
