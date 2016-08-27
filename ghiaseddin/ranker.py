@@ -323,6 +323,6 @@ class Ghiaseddin(object):
         filters = params[0].transpose(0, 2, 3, 1)
         fig = vis_square(filters)
         folder_path = os.path.join(
-            settings.result_models_root, "conv1filters|%s" % self._model_name_with_iter())
+            settings.result_models_root, "conv1filters|%s" % self.NAME)
         boltons.fileutils.mkdir_p(folder_path)
-        fig.savefig(os.path.join(folder_path, 'filters.png'))
+        fig.savefig(os.path.join(folder_path, 'filters-%d.png' % self.log_step))
