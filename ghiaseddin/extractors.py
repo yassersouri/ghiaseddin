@@ -119,6 +119,8 @@ class GoogLeNet(Extractor):
     _input_raw_scale = 255
     _input_mean_to_subtract = [104, 117, 123]
 
+    conv1_layer_name = 'conv1/7x7_s2'
+
     def __init__(self, weights):
         super(GoogLeNet, self).__init__(weights)
 
@@ -185,6 +187,8 @@ class VGG16(Extractor):
     _input_raw_scale = 255
     _input_height = 224
     _input_width = 224
+
+    conv1_layer_name = 'conv1_1'
 
     def __init__(self, weights):
         super(VGG16, self).__init__(weights)

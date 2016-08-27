@@ -289,4 +289,40 @@ class Ghiaseddin(object):
         pass
 
     def conv1_filters(self):
-        pass
+        def vis_square(data):
+            """
+            Code from: http://nbviewer.jupyter.org/github/BVLC/caffe/blob/master/examples/00-classification.ipynb, with small modifications
+            Take an array of shape (n, height, width) or (n, height, width, 3)
+            and visualize each (height, width) thing in a grid of size approx. sqrt(n) by sqrt(n)
+            """
+
+            # normalize data for display
+            data = (data - data.min()) / (data.max() - data.min())
+
+            # force the number of filters to be square
+            n = int(np.ceil(np.sqrt(data.shape[0])))
+            padding = (((0, n ** 2 - data.shape[0]),
+                        (0, 1), (0, 1)) + ((0, 0),) * (data.ndim - 3))  # don't pad the last dimension (if there is one)
+            data = np.pad(data, padding, mode='constant',
+                          constant_values=1)  # pad with ones (white)
+
+            # tile the filters into an image
+            data = data.reshape(
+                (n, n) + data.shape[1:]).transpose((0, 2, 1, 3) + tuple(range(4, data.ndim + 1)))
+            data = data.reshape(
+                (n * data.shape[1], n * data.shape[3]) + data.shape[4:])
+
+            fig = plt.figure(figsize=(10, 10))
+            ax = fig.add_subplot(111)
+            with plt.rc_context({'image.interpolation': 'nearest', 'image.cmap': 'gray'}):
+                ax.imshow(data)
+            ax.axis('off')
+            return fig
+
+        params = lasagne.layers.get_all_param_values(self.extractor.net[self.extractor.conv1_layer_name])
+        filters = params[0].transpose(0, 2, 3, 1)
+        fig = vis_square(filters)
+        folder_path = os.path.join(
+            settings.result_models_root, "conv1filters|%s" % self._model_name_with_iter())
+        boltons.fileutils.mkdir_p(folder_path)
+        fig.savefig(os.path.join(folder_path, 'filters.png'))
