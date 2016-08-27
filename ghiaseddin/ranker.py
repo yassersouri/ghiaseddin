@@ -142,11 +142,15 @@ class Ghiaseddin(object):
             input_data, input_target)
 
         # log the losses
-        self.pastalog.post('train_loss', value=float(loss), step=self.log_step)
-        self.pastalog.post('train_xent', value=float(
-            xent_loss), step=self.log_step)
-        self.pastalog.post('train_l2pen', value=float(
-            l2_penalty), step=self.log_step)
+        if not np.isnan(loss):
+            self.pastalog.post('train_loss', value=float(loss), step=self.log_step)
+            self.pastalog.post('train_xent', value=float(
+                xent_loss), step=self.log_step)
+            self.pastalog.post('train_l2pen', value=float(
+                l2_penalty), step=self.log_step)
+        else:
+            logger.warning('nan loss')
+
         toc = dt.now()
 
         self.log_step += 1
