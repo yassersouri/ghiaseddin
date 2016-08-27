@@ -210,6 +210,10 @@ class Ghiaseddin(object):
         return os.path.join(settings.model_root, "%s.npz" % (self._model_name_with_iter()))
 
     def save(self, path=None):
+        """
+        Save the model to file
+        TODO: save all parameters not only the network parameters, for easy resuming of training.
+        """
         if not path:
             path = self._model_name_from_settings()
 
@@ -217,7 +221,7 @@ class Ghiaseddin(object):
 
     def load(self, path=None):
         """
-        Loads the model which is trained for the most iterations
+        Loads the model which is trained for the most iterations.
         """
         if not path:
             list_of_models = os.listdir(settings.result_models_root)
@@ -282,4 +286,7 @@ class Ghiaseddin(object):
         pass
 
     def generate_embedding(self):
+        pass
+
+    def conv1_filters(self):
         pass
