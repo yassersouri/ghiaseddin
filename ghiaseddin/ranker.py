@@ -50,34 +50,49 @@ class Ghiaseddin(object):
 
         self.pastalog = Log('http://localhost:8100/', self.NAME)
 
-        # TODO: check if converting these to shared variable actually improves performance.
+        # TODO: check if converting these to shared variable actually improves
+        # performance.
         self.input_var = T.ftensor4('inputs')
         self.target_var = T.fvector('targets')
 
-        self.extractor.set_input_var(self.input_var, batch_size=train_batch_size)
+        self.extractor.set_input_var(
+            self.input_var, batch_size=train_batch_size)
         self.extractor_layer = self.extractor.get_output_layer()
 
-        self.extractor_learning_rate_shared_var = theano.shared(np.cast['float32'](extractor_learning_rate), name='extractor_learning_rate')
-        self.ranker_learning_rate_shared_var = theano.shared(np.cast['float32'](ranker_learning_rate), name='ranker_learning_rate')
+        self.extractor_learning_rate_shared_var = theano.shared(
+            np.cast['float32'](extractor_learning_rate), name='extractor_learning_rate')
+        self.ranker_learning_rate_shared_var = theano.shared(
+            np.cast['float32'](ranker_learning_rate), name='ranker_learning_rate')
 
-        self.extractor_params = lasagne.layers.get_all_params(self.extractor_layer, trainable=True)
+        self.extractor_params = lasagne.layers.get_all_params(
+            self.extractor_layer, trainable=True)
 
-        self.absolute_rank_estimate, self.ranker_params = self._create_absolute_rank_estimate(self.extractor_layer)
-        self.reshaped_input = lasagne.layers.ReshapeLayer(self.absolute_rank_estimate, (-1, 2))
+        self.absolute_rank_estimate, self.ranker_params = self._create_absolute_rank_estimate(
+            self.extractor_layer)
+        self.reshaped_input = lasagne.layers.ReshapeLayer(
+            self.absolute_rank_estimate, (-1, 2))
 
         # the posterior estimate layer is not trainable
-        self.posterior_estimate = lasagne.layers.DenseLayer(self.reshaped_input, num_units=1, W=lasagne.init.np.array([[1], [-1]]), b=lasagne.init.Constant(val=0), nonlinearity=lasagne.nonlinearities.sigmoid)
-        self.posterior_estimate.params[self.posterior_estimate.W].remove('trainable')
-        self.posterior_estimate.params[self.posterior_estimate.b].remove('trainable')
+        self.posterior_estimate = lasagne.layers.DenseLayer(self.reshaped_input, num_units=1, W=lasagne.init.np.array(
+            [[1], [-1]]), b=lasagne.init.Constant(val=0), nonlinearity=lasagne.nonlinearities.sigmoid)
+        self.posterior_estimate.params[
+            self.posterior_estimate.W].remove('trainable')
+        self.posterior_estimate.params[
+            self.posterior_estimate.b].remove('trainable')
 
-        # the clipping is done to prevent the model from diverging as caused by binary XEnt
-        self.predictions = T.clip(lasagne.layers.get_output(self.posterior_estimate).ravel(), self._epsilon, 1.0 - self._epsilon)
+        # the clipping is done to prevent the model from diverging as caused by
+        # binary XEnt
+        self.predictions = T.clip(lasagne.layers.get_output(
+            self.posterior_estimate).ravel(), self._epsilon, 1.0 - self._epsilon)
 
-        self.xent_loss = lasagne.objectives.binary_crossentropy(self.predictions, self.target_var).mean()
-        self.l2_penalty = lasagne.regularization.regularize_network_params(self.absolute_rank_estimate, lasagne.regularization.l2)
+        self.xent_loss = lasagne.objectives.binary_crossentropy(
+            self.predictions, self.target_var).mean()
+        self.l2_penalty = lasagne.regularization.regularize_network_params(
+            self.absolute_rank_estimate, lasagne.regularization.l2)
         self.loss = self.xent_loss + self.l2_penalty * self.weight_decay
 
-        self.test_absolute_rank_estimate = lasagne.layers.get_output(self.absolute_rank_estimate, deterministic=True)
+        self.test_absolute_rank_estimate = lasagne.layers.get_output(
+            self.absolute_rank_estimate, deterministic=True)
 
         self._create_theano_functions()
 
@@ -86,12 +101,14 @@ class Ghiaseddin(object):
         Will be creating theano functions for training and testing
         """
         if self.extractor_learning_rate != 0:
-            self._feature_extractor_updates = self.optimizer(self.loss, self.extractor_params, learning_rate=self.extractor_learning_rate_shared_var)
+            self._feature_extractor_updates = self.optimizer(
+                self.loss, self.extractor_params, learning_rate=self.extractor_learning_rate_shared_var)
         else:
             self._feature_extractor_updates = OrderedDict()
 
         if self.ranker_learning_rate != 0:
-            self._ranker_updates = self.optimizer(self.loss, self.ranker_params, learning_rate=self.ranker_learning_rate_shared_var)
+            self._ranker_updates = self.optimizer(
+                self.loss, self.ranker_params, learning_rate=self.ranker_learning_rate_shared_var)
         else:
             self._ranker_updates = OrderedDict()
 
@@ -101,8 +118,10 @@ class Ghiaseddin(object):
 
         self._all_updates = OrderedDict(f)
 
-        self.training_function = theano.function([self.input_var, self.target_var], [self.loss, self.xent_loss, self.l2_penalty], updates=self._all_updates)
-        self.testing_function = theano.function([self.input_var], self.test_absolute_rank_estimate)
+        self.training_function = theano.function([self.input_var, self.target_var], [
+                                                 self.loss, self.xent_loss, self.l2_penalty], updates=self._all_updates)
+        self.testing_function = theano.function(
+            [self.input_var], self.test_absolute_rank_estimate)
 
     def _create_absolute_rank_estimate(self, incoming):
         """
@@ -110,19 +129,24 @@ class Ghiaseddin(object):
         Currently this is only a single dense layer with linear activation. This could easily be extended with more non-linearity.
         Should return the absolute rank estimate layer and all the parameters.
         """
-        absolute_rank_estimate_layer = lasagne.layers.DenseLayer(incoming=incoming, num_units=1, W=lasagne.init.GlorotUniform(), b=lasagne.init.Constant(val=0.1), nonlinearity=lasagne.nonlinearities.linear)
-        # Take care if you want to use multiple layers here you have to return all the params of all the layers
+        absolute_rank_estimate_layer = lasagne.layers.DenseLayer(incoming=incoming, num_units=1, W=lasagne.init.GlorotUniform(
+        ), b=lasagne.init.Constant(val=0.1), nonlinearity=lasagne.nonlinearities.linear)
+        # Take care if you want to use multiple layers here you have to return
+        # all the params of all the layers
         return absolute_rank_estimate_layer, absolute_rank_estimate_layer.get_params()
 
     def _train_1_batch(self, preprocessed_input):
         tic = dt.now()
         input_data, input_target, input_mask = preprocessed_input
-        loss, xent_loss, l2_penalty = self.training_function(input_data, input_target)
+        loss, xent_loss, l2_penalty = self.training_function(
+            input_data, input_target)
 
         # log the losses
         self.pastalog.post('train_loss', value=float(loss), step=self.log_step)
-        self.pastalog.post('train_xent', value=float(xent_loss), step=self.log_step)
-        self.pastalog.post('train_l2pen', value=float(l2_penalty), step=self.log_step)
+        self.pastalog.post('train_xent', value=float(
+            xent_loss), step=self.log_step)
+        self.pastalog.post('train_l2pen', value=float(
+            l2_penalty), step=self.log_step)
         toc = dt.now()
 
         self.log_step += 1
@@ -132,7 +156,8 @@ class Ghiaseddin(object):
 
     def train_one_epoch(self):
         tic = dt.now()
-        train_generator = self.dataset.train_generator(batch_size=self.train_batch_size, shuffle=True, cut_tail=True)
+        train_generator = self.dataset.train_generator(
+            batch_size=self.train_batch_size, shuffle=True, cut_tail=True)
         losses = []
         for i, b in enumerate(train_generator):
             preprocessed_input = self.extractor.preprocess(b)
@@ -153,7 +178,8 @@ class Ghiaseddin(object):
         current_iter = 0
         total_epochs = 0
         while True:
-            train_generator = self.dataset.train_generator(batch_size=self.train_batch_size, shuffle=True, cut_tail=True)
+            train_generator = self.dataset.train_generator(
+                batch_size=self.train_batch_size, shuffle=True, cut_tail=True)
             for i, b in enumerate(train_generator):
                 preprocessed_input = self.extractor.preprocess(b)
                 batch_loss = self._train_1_batch(preprocessed_input)
@@ -182,16 +208,19 @@ class Ghiaseddin(object):
 
     def eval_accuracy(self):
         tic = dt.now()
-        test_generator = self.dataset.test_generator(batch_size=self.train_batch_size)
+        test_generator = self.dataset.test_generator(
+            batch_size=self.train_batch_size)
         total = 0
         correct = 0
 
         for batch in test_generator:
             preprocessed_input = self.extractor.preprocess(batch)
-            estimates, target, mask = self._test_rank_estimate(preprocessed_input)
+            estimates, target, mask = self._test_rank_estimate(
+                preprocessed_input)
 
             estimated_target = self._estimates_to_target_estimates(estimates)
-            # TODO: this for loop could be speeded up with array operations instead of for
+            # TODO: this for loop could be speeded up with array operations
+            # instead of for
             for p, t, m in zip(estimated_target, target, mask):
                 if m and t != 0.5:
                     total += 1
@@ -217,7 +246,8 @@ class Ghiaseddin(object):
         if not path:
             path = self._model_name_from_settings()
 
-        np.savez(path, params=lasagne.layers.get_all_param_values(self.absolute_rank_estimate))
+        np.savez(path, params=lasagne.layers.get_all_param_values(
+            self.absolute_rank_estimate))
 
     def load(self, path=None):
         """
@@ -232,7 +262,9 @@ class Ghiaseddin(object):
             for model in list_of_models:
                 if model.startswith(self.NAME) and model.endswith('.npz'):
                     parts = model.split('-')
-                    current_iter = int(parts[-1][5:-4])  # the last part is like iter:******.npz, so 5 and -4 makes sense
+                    # the last part is like iter:******.npz, so 5 and -4 makes
+                    # sense
+                    current_iter = int(parts[-1][5:-4])
                     if current_iter > most_iters:
                         most_iters = current_iter
                         the_better_model = model
@@ -241,18 +273,22 @@ class Ghiaseddin(object):
 
         with np.load(path) as data:
             loaded_from_file = data['params']
-        lasagne.layers.set_all_param_values(self.absolute_rank_estimate, loaded_from_file)
+        lasagne.layers.set_all_param_values(
+            self.absolute_rank_estimate, loaded_from_file)
 
     def generate_misclassified(self):
-        test_generator = self.dataset.test_generator(batch_size=self.train_batch_size)
+        test_generator = self.dataset.test_generator(
+            batch_size=self.train_batch_size)
 
-        folder_path = os.path.join(settings.result_models_root, "missclassified|%s" % self._model_name_with_iter())
+        folder_path = os.path.join(
+            settings.result_models_root, "missclassified|%s" % self._model_name_with_iter())
         boltons.fileutils.mkdir_p(folder_path)
 
         num = 0
         for batch in test_generator:
             preprocessed_input = self.extractor.preprocess(batch)
-            estimates, target, mask = self._test_rank_estimate(preprocessed_input)
+            estimates, target, mask = self._test_rank_estimate(
+                preprocessed_input)
 
             estimated_target = self._estimates_to_target_estimates(estimates)
             for p, t, m, i in zip(estimated_target, target, mask, batch):
@@ -273,10 +309,12 @@ class Ghiaseddin(object):
                         ax2.axis('off')
                         ax2.set_title('B')
 
-                        attribute_name = self.dataset._ATT_NAMES[self.dataset.attribute_index]
+                        attribute_name = self.dataset._ATT_NAMES[
+                            self.dataset.attribute_index]
                         truth_thing = '>' if t == 1 else '<'
                         estimated_thing = '>' if p == 1 else '<'
-                        plt.suptitle("Attribute: %s | Truth: %s | Estimated: %s" % (attribute_name, truth_thing, estimated_thing))
+                        plt.suptitle("Attribute: %s | Truth: %s | Estimated: %s" % (
+                            attribute_name, truth_thing, estimated_thing))
 
                         plt.savefig(os.path.join(folder_path, '%d.png' % num))
                         plt.close()
