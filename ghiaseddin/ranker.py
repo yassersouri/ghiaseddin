@@ -224,7 +224,7 @@ class Ghiaseddin(object):
         Loads the model which is trained for the most iterations.
         """
         if not path:
-            list_of_models = os.listdir(settings.result_models_root)
+            list_of_models = os.listdir(settings.model_root)
 
             most_iters = 0
             the_better_model = ''
@@ -232,11 +232,11 @@ class Ghiaseddin(object):
             for model in list_of_models:
                 if model.startswith(self.NAME) and model.endswith('.npz'):
                     parts = model.split('-')
-                    current_iter = int(parts[-1][:-4])
+                    current_iter = int(parts[-1][5:-4])  # the last part is like iter:******.npz, so 5 and -4 makes sense
                     if current_iter > most_iters:
                         most_iters = current_iter
                         the_better_model = model
-            path = os.path.join(settings.result_models_root, the_better_model)
+            path = os.path.join(settings.model_root, the_better_model)
             self.log_step = most_iters
 
         with np.load(path) as data:
@@ -246,7 +246,7 @@ class Ghiaseddin(object):
     def generate_misclassified(self):
         test_generator = self.dataset.test_generator(batch_size=self.train_batch_size)
 
-        folder_path = os.path.join(settings.result_models_root, self._current_name())
+        folder_path = os.path.join(settings.result_models_root, "missclassified|%s" % self._model_name_with_iter())
         boltons.fileutils.mkdir_p(folder_path)
 
         num = 0
