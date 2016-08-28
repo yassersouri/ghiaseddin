@@ -368,3 +368,29 @@ class Ghiaseddin(object):
             settings.result_models_root, "conv1filters|%s" % self.NAME)
         boltons.fileutils.mkdir_p(folder_path)
         fig.savefig(os.path.join(folder_path, 'filters-%d.png' % self.log_step))
+
+    def estimates_predictions_corrects_on_test(self):
+        test_generator = self.dataset.test_generator(
+            batch_size=self.train_batch_size)
+        total_estimates = []
+        predictions = []
+        corrects = []
+
+        for batch in test_generator:
+            preprocessed_input = self.extractor.preprocess(batch)
+            estimates, target, mask = self._test_rank_estimate(
+                preprocessed_input)
+
+            total_estimates.extend(estimates[:sum(mask)])
+
+            estimated_target = self._estimates_to_target_estimates(estimates)
+
+            for p, t, m in zip(estimated_target, target, mask):
+                if m:
+                    predictions.append(p)
+                    if p == t:
+                        corrects.append(1)
+                    else:
+                        corrects.append(0)
+
+        return np.array(total_estimates).flatten(), predictions, corrects
