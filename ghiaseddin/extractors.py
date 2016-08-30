@@ -47,6 +47,9 @@ class Extractor(object):
         self.net[self.INPUT_LAYER_NAME].input_var = input_var
         self.net[self.INPUT_LAYER_NAME].shape = tuple(input_layer_shape)
 
+    def get_input_var(self):
+        return self.net[self.INPUT_LAYER_NAME].input_var
+
     def _general_image_preprocess(self, img):
         img = utils.resize_image(img, (self._input_height, self._input_height))
 

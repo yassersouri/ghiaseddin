@@ -11,6 +11,9 @@ import os
 import utils
 import matplotlib.pylab as plt
 import boltons
+import skimage.transform
+import skimage.filters
+import skimage.color
 
 
 logger = logging.getLogger('Ghiaseddin')
@@ -326,8 +329,82 @@ class Ghiaseddin(object):
                         plt.close()
                         num += 1
 
-    def generate_saliency(self):
-        pass
+    def generate_saliency(self, test_pair_ids=None, size=None):
+        # get the id of the test pairs to generate saliency on
+        if not test_pair_ids:
+            if not size:
+                size = 2
+            length = len(self.dataset._test_targets)
+            test_pair_ids = np.random.choice(range(length), size=size)
+        else:
+            size = len(test_pair_ids)
+
+        if not getattr(self, 'saliency_fn', None):
+            # create theano function
+            inp = self.extractor.get_input_var()
+            outp = lasagne.layers.get_output(self.posterior_estimate, deterministic=True)
+            saliency = theano.grad(outp.sum(), wrt=inp)
+            self.saliency_fn = theano.function([inp], [saliency])
+
+        # give input to the model and compute saliencies
+        saliencies = []
+        images = []
+        for i in range(size):
+            pair = self.dataset._test_pairs[i, :]
+            img1_path = self.dataset._image_adresses[pair[0]]
+            img2_path = self.dataset._image_adresses[pair[1]]
+            img1 = utils.load_image(img1_path)
+            img2 = utils.load_image(img2_path)
+
+            images.append((img1, img2))
+
+            x = np.zeros((2, 3, self.extractor._input_height, self.extractor._input_width), dtype=np.float32)
+            x[0, ...] = self.extractor._general_image_preprocess(img1)
+            x[1, ...] = self.extractor._general_image_preprocess(img2)
+            saliency = self.saliency_fn(x)[0]
+
+            # unprocess saliency
+            new_saliency = [0] * 2
+            for i in range(2):
+                new_saliency[i] = saliency[i][::-1].transpose(1, 2, 0)
+
+            saliencies.append(new_saliency)
+
+        # show, save and return graph of the figure
+        def show_image(ax, img):
+            ax.imshow(img)
+            ax.axis('off')
+
+        def show_saliency(ax, saliency, img):
+            # preprocess saliency
+            sal_resize = skimage.transform.resize(saliency.max(axis=-1), img.shape[:2])
+            sal_resize = skimage.filters.gaussian(sal_resize, 10)
+            sal_resize = sal_resize / sal_resize.min()
+            sal_resize[sal_resize < 0] = 0
+
+            ax.matshow(sal_resize, alpha=1)
+            ax.imshow(skimage.color.rgb2gray(img), cmap=plt.cm.gray, alpha=0.5)
+            ax.axis('off')
+
+        fig = plt.figure(figsize=(15, 3 * size))
+        for i in range(size):
+            # show first image
+            ax = fig.add_subplot(size, 4, 1 + i * 4)
+            show_image(ax, images[i][0])
+
+            # show first saliency map
+            ax = fig.add_subplot(size, 4, 2 + i * 4)
+            show_saliency(ax, saliencies[i][0], images[i][0])
+
+            # show second image
+            ax = fig.add_subplot(size, 4, 3 + i * 4)
+            show_image(ax, images[i][1])
+
+            # show second saliency map
+            ax = fig.add_subplot(size, 4, 4 + i * 4)
+            show_saliency(ax, saliencies[i][1], images[i][1])
+
+        return fig
 
     def generate_embedding(self):
         pass
