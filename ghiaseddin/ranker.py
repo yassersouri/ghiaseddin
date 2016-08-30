@@ -272,6 +272,8 @@ class Ghiaseddin(object):
                     if current_iter > most_iters:
                         most_iters = current_iter
                         the_better_model = model
+            if the_better_model == '':
+                raise Exception("No model found")
             path = os.path.join(settings.model_root, the_better_model)
             self.log_step = most_iters
 
