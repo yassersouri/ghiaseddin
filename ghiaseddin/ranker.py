@@ -329,11 +329,9 @@ class Ghiaseddin(object):
                         plt.close()
                         num += 1
 
-    def generate_saliency(self, test_pair_ids=None, size=None):
+    def generate_saliency(self, test_pair_ids=[], size=2):
         # get the id of the test pairs to generate saliency on
-        if not test_pair_ids:
-            if not size:
-                size = 2
+        if len(test_pair_ids) == 0:
             length = len(self.dataset._test_targets)
             test_pair_ids = np.random.choice(range(length), size=size)
         else:
