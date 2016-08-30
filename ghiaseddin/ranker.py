@@ -388,7 +388,9 @@ class Ghiaseddin(object):
             for p, t, m in zip(estimated_target, target, mask):
                 if m:
                     predictions.append(p)
-                    if p == t:
+                    if t == 0.5:
+                        corrects.append(0.5)
+                    elif p == t:
                         corrects.append(1)
                     else:
                         corrects.append(0)
