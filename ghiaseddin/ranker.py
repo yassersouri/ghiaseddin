@@ -350,7 +350,7 @@ class Ghiaseddin(object):
         saliencies = []
         images = []
         for i in range(size):
-            pair = self.dataset._test_pairs[i, :]
+            pair = self.dataset._test_pairs[test_pair_ids[i], :]
             img1_path = self.dataset._image_adresses[pair[0]]
             img2_path = self.dataset._image_adresses[pair[1]]
             img1 = utils.load_image(img1_path)
