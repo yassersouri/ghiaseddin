@@ -6,6 +6,7 @@ from datetime import datetime as dt
 import lasagne
 import ghiaseddin
 import boltons.fileutils
+import numpy as np
 
 
 @click.command()
@@ -34,6 +35,10 @@ def main(dataset, attribute, epochs, attribute_split):
                                   ranker_learning_rate=1e-4,
                                   extractor_learning_rate=1e-5,
                                   ranker_nonlinearity=lasagne.nonlinearities.linear)
+    # saliency stuff
+    test_pair_ids = np.random.choice(range(len(dataset._test_targets)), size=10)
+    saliency_folder_path = os.path.join(ghiaseddin.settings.result_models_root, "saliency|%s" % model.NAME)
+    boltons.fileutils.mkdir_p(saliency_folder_path)
 
     matrixes = []
     matrixes.append(model.estimates_predictions_corrects_on_test())
@@ -46,11 +51,17 @@ def main(dataset, attribute, epochs, attribute_split):
         sys.stdout.flush()
         matrixes.append(model.estimates_predictions_corrects_on_test())
 
+        # save saliency figure
+        fig = model.generate_saliency(test_pair_ids)
+        fig.savefig(os.path.join(saliency_folder_path, 'saliency-%d.png' % model.log_step))
+
+        # save conv1 filters
+        model.conv1_filters()
+
     model.save()
+
     # save missclassified
     model.generate_misclassified()
-    # save conv1 filters
-    model.conv1_filters()
 
     # save corrects pairs during training
     folder_path = os.path.join(ghiaseddin.settings.result_models_root, "matrixes|%s" % model.NAME)
