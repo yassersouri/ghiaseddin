@@ -31,8 +31,9 @@ class Extractor(object):
     _input_raw_scale = 255
     _input_mean_to_subtract = [104, 117, 123]
 
-    def __init__(self, weights):
+    def __init__(self, weights, augmentation=False):
         self.weights = weights
+        self.augmentation = augmentation
 
     @staticmethod
     def _get_weights_from_file(file_addr, weights_key):
@@ -50,7 +51,9 @@ class Extractor(object):
     def get_input_var(self):
         return self.net[self.INPUT_LAYER_NAME].input_var
 
-    def _general_image_preprocess(self, img):
+    def _general_image_preprocess(self, img, augmentation=False):
+        if augmentation:
+            img = utils.random_augmentation(img)
         img = utils.resize_image(img, (self._input_height, self._input_height))
 
         img = img.transpose((2, 0, 1))
@@ -97,7 +100,7 @@ class Extractor(object):
 
         return lasagne.utils.theano.function([inp], [out])
 
-    def preprocess(self, batch):
+    def preprocess(self, batch, augmentation=False):
         batch_size = len(batch)
         images = np.zeros((batch_size * 2, 3, self._input_height, self._input_width), dtype=np.float32)
         annotations = np.zeros((batch_size), dtype=np.float32)
@@ -109,8 +112,8 @@ class Extractor(object):
                 continue
 
             (img1_path, img2_path), target = batch_item
-            images[2 * i, ...] = self._general_image_preprocess(utils.load_image(img1_path))
-            images[2 * i + 1, ...] = self._general_image_preprocess(utils.load_image(img2_path))
+            images[2 * i, ...] = self._general_image_preprocess(utils.load_image(img1_path), augmentation)
+            images[2 * i + 1, ...] = self._general_image_preprocess(utils.load_image(img2_path), augmentation)
             annotations[i] = target
 
         return images, annotations, mask
@@ -124,8 +127,8 @@ class GoogLeNet(Extractor):
 
     conv1_layer_name = 'conv1/7x7_s2'
 
-    def __init__(self, weights):
-        super(GoogLeNet, self).__init__(weights)
+    def __init__(self, weights, augmentation=False):
+        super(GoogLeNet, self).__init__(weights, augmentation)
 
         def build_inception_module(name, input_layer, nfilters):
             # nfilters: (pool_proj, 1x1, 3x3_reduce, 3x3, 5x5_reduce, 5x5)
@@ -193,8 +196,8 @@ class VGG16(Extractor):
 
     conv1_layer_name = 'conv1_1'
 
-    def __init__(self, weights):
-        super(VGG16, self).__init__(weights)
+    def __init__(self, weights, augmentation=False):
+        super(VGG16, self).__init__(weights, augmentation)
 
         net = {}
         net['input'] = lasagne.layers.InputLayer((None, 3, 224, 224))
@@ -234,7 +237,9 @@ class InceptionV3(Extractor):
     _input_width = 299
     _input_mean_to_subtract = [0, 0, 0]
 
-    def _general_image_preprocess(self, img):
+    def _general_image_preprocess(self, img, augmentation=False):
+        if augmentation:
+            img = utils.random_augmentation(img)
         img = utils.resize_image(img, (self._input_height, self._input_height))
 
         img = img.transpose((2, 0, 1))
@@ -245,8 +250,8 @@ class InceptionV3(Extractor):
 
         return img
 
-    def __init__(self, weights):
-        super(InceptionV3, self).__init__(weights)
+    def __init__(self, weights, augmentation=False):
+        super(InceptionV3, self).__init__(weights, augmentation)
 
         def bn_conv(input_layer, **kwargs):
             l = ConvLayer(input_layer, **kwargs)

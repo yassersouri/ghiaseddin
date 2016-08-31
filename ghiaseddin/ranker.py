@@ -3,7 +3,10 @@ import theano
 import theano.tensor as T
 import numpy as np
 from collections import OrderedDict
-from pastalog import Log
+try:
+    from pastalog import Log
+except:
+    pass
 from datetime import datetime as dt
 import logging
 import settings
@@ -29,7 +32,8 @@ class Ghiaseddin(object):
     log_step = 0
 
     def __init__(self, extractor, dataset, train_batch_size=16, extractor_learning_rate=1e-5, ranker_learning_rate=1e-4,
-                 weight_decay=1e-5, optimizer=lasagne.updates.rmsprop, ranker_nonlinearity=lasagne.nonlinearities.linear, debug=False):
+                 weight_decay=1e-5, optimizer=lasagne.updates.rmsprop, ranker_nonlinearity=lasagne.nonlinearities.linear, debug=False,
+                 do_log=True):
 
         self.train_batch_size = train_batch_size
         self.extractor = extractor
@@ -40,8 +44,13 @@ class Ghiaseddin(object):
         self.extractor_learning_rate = extractor_learning_rate
         self.ranker_learning_rate = ranker_learning_rate
         self.debug = debug
+        self.do_log = do_log
 
-        self.NAME = "e:%s-d:%s-bs:%d-elr:%f-rlr:%f-opt:%s-rnl:%s-wd:%f-rs:%s" % (self.extractor.__class__.__name__,
+        extractor_name = self.extractor.__class__.__name__
+        if extractor.augmentation:
+            extractor_name = "%s-aug" % extractor_name
+
+        self.NAME = "e:%s-d:%s-bs:%d-elr:%f-rlr:%f-opt:%s-rnl:%s-wd:%f-rs:%s" % (extractor_name,
                                                                                  self.dataset.get_name(),
                                                                                  self.train_batch_size,
                                                                                  extractor_learning_rate,
@@ -50,8 +59,8 @@ class Ghiaseddin(object):
                                                                                  self.ranker_nonlinearity.__name__,
                                                                                  self.weight_decay,
                                                                                  str(settings.RANDOM_SEED))
-
-        self.pastalog = Log('http://localhost:8100/', self.NAME)
+        if self.do_log:
+            self.pastalog = Log('http://localhost:8100/', self.NAME)
 
         # TODO: check if converting these to shared variable actually improves
         # performance.
@@ -146,11 +155,12 @@ class Ghiaseddin(object):
 
         # log the losses
         if not np.isnan(loss):
-            self.pastalog.post('train_loss', value=float(loss), step=self.log_step)
-            self.pastalog.post('train_xent', value=float(
-                xent_loss), step=self.log_step)
-            self.pastalog.post('train_l2pen', value=float(
-                l2_penalty), step=self.log_step)
+            if self.do_log:
+                self.pastalog.post('train_loss', value=float(loss), step=self.log_step)
+                self.pastalog.post('train_xent', value=float(
+                    xent_loss), step=self.log_step)
+                self.pastalog.post('train_l2pen', value=float(
+                    l2_penalty), step=self.log_step)
         else:
             logger.warning('nan loss')
 
@@ -167,7 +177,7 @@ class Ghiaseddin(object):
             batch_size=self.train_batch_size, shuffle=True, cut_tail=True)
         losses = []
         for i, b in enumerate(train_generator):
-            preprocessed_input = self.extractor.preprocess(b)
+            preprocessed_input = self.extractor.preprocess(b, self.extractor.augmentation)
             batch_loss = self._train_1_batch(preprocessed_input)
             losses.append(batch_loss)
         toc = dt.now()
@@ -184,17 +194,20 @@ class Ghiaseddin(object):
         losses = []
         current_iter = 0
         total_epochs = 0
-        while True:
+        finished = False
+        while True and not finished:
             train_generator = self.dataset.train_generator(
                 batch_size=self.train_batch_size, shuffle=True, cut_tail=True)
             for i, b in enumerate(train_generator):
-                preprocessed_input = self.extractor.preprocess(b)
+                preprocessed_input = self.extractor.preprocess(b, self.extractor.augmentation)
                 batch_loss = self._train_1_batch(preprocessed_input)
                 losses.append(batch_loss)
                 current_iter += 1
                 if current_iter >= n:
+                    finished = True
                     break
-            total_epochs += 1
+            if not finished:
+                total_epochs += 1
 
         return losses, total_epochs
 

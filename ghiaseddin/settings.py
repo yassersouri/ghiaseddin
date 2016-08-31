@@ -27,6 +27,8 @@ _osr_pubfig_root = os.path.join(dataset_root, 'OSR-PubFig')
 osr_root = os.path.join(_osr_pubfig_root, 'relative_attributes', 'osr')
 pubfig_root = os.path.join(_osr_pubfig_root, 'relative_attributes', 'pubfig')
 
+boltons.fileutils.mkdir_p(model_root)
+boltons.fileutils.mkdir_p(result_models_root)
 boltons.fileutils.mkdir_p(zappos_root)
 boltons.fileutils.mkdir_p(lfw10_root)
 boltons.fileutils.mkdir_p(_osr_pubfig_root)

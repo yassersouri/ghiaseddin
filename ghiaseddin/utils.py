@@ -4,6 +4,7 @@ import numpy as np
 from scipy.ndimage import zoom
 from skimage.transform import resize
 import matplotlib.pylab as plt
+import keras_image_preprocessing
 
 # The following two function are borrowed from Caffe
 # https://github.com/BVLC/caffe/blob/32dc03f14c36d1df46f37a7d13ad528e52c6f786/python/caffe/io.py#L278-L337
@@ -86,3 +87,25 @@ def show_training_matrixes(estimates, title):
             axes[i].matshow(estimates[i])
             axes[i].axis('off')
     return fig
+
+
+def _random_fliprl(img):
+    if np.random.rand() > 0.5:
+        return np.fliplr(img)
+    else:
+        return img
+
+
+def _random_rotate(img):
+    return keras_image_preprocessing.random_rotation(img, 20, row_index=0, col_index=1, channel_index=2)
+
+
+def _random_zoom(img):
+    return keras_image_preprocessing.random_zoom(img, (0.65, 0.6), row_index=0, col_index=1, channel_index=2)
+
+
+def random_augmentation(img):
+    img = _random_fliprl(img)
+    img = _random_zoom(img)
+    img = _random_rotate(img)
+    return img
