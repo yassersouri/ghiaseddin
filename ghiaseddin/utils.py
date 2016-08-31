@@ -3,6 +3,7 @@ import skimage.io
 import numpy as np
 from scipy.ndimage import zoom
 from skimage.transform import resize
+import matplotlib.pylab as plt
 
 # The following two function are borrowed from Caffe
 # https://github.com/BVLC/caffe/blob/32dc03f14c36d1df46f37a7d13ad528e52c6f786/python/caffe/io.py#L278-L337
@@ -64,3 +65,24 @@ def resize_image(im, new_dims, interp_order=1):
         scale = tuple(np.array(new_dims, dtype=float) / np.array(im.shape[:2]))
         resized_im = zoom(im, scale + (1,), order=interp_order)
     return resized_im.astype(np.float32)
+
+
+def convert_estimates_on_test_to_matrix(predictions, height=10):
+    predictions = np.reshape(predictions, (-1, 1)).T
+    predictions = np.resize(predictions, (height, predictions.shape[1]))
+    return predictions
+
+
+def show_training_matrixes(estimates, title):
+    length = len(estimates)
+    axes = []
+    fig = plt.figure(figsize=(100, 2 * length))
+    fig.suptitle(title, fontsize=30, verticalalignment='top')
+    for i in range(length):
+        axes.append(fig.add_subplot(length, 1, i + 1))
+
+    with plt.rc_context({'image.cmap': 'gray', 'image.interpolation': 'nearest'}):
+        for i in range(length):
+            axes[i].matshow(estimates[i])
+            axes[i].axis('off')
+    return fig

@@ -47,6 +47,9 @@ class Extractor(object):
         self.net[self.INPUT_LAYER_NAME].input_var = input_var
         self.net[self.INPUT_LAYER_NAME].shape = tuple(input_layer_shape)
 
+    def get_input_var(self):
+        return self.net[self.INPUT_LAYER_NAME].input_var
+
     def _general_image_preprocess(self, img):
         img = utils.resize_image(img, (self._input_height, self._input_height))
 
@@ -119,6 +122,8 @@ class GoogLeNet(Extractor):
     _input_raw_scale = 255
     _input_mean_to_subtract = [104, 117, 123]
 
+    conv1_layer_name = 'conv1/7x7_s2'
+
     def __init__(self, weights):
         super(GoogLeNet, self).__init__(weights)
 
@@ -185,6 +190,8 @@ class VGG16(Extractor):
     _input_raw_scale = 255
     _input_height = 224
     _input_width = 224
+
+    conv1_layer_name = 'conv1_1'
 
     def __init__(self, weights):
         super(VGG16, self).__init__(weights)
