@@ -17,7 +17,6 @@ import numpy as np
 @click.option('--attribute_split', type=click.INT, default=0)
 @click.option('--do_log', type=click.BOOL, default=True, envvar='DO_LOG')
 def main(dataset, augmentation, attribute, epochs, attribute_split, do_log):
-    print do_log; exit;
 
     si = attribute_split
 
