@@ -20,7 +20,7 @@ import skimage.color
 
 
 logger = logging.getLogger('Ghiaseddin')
-hdlr = logging.FileHandler('/var/tmp/Ghiaseddin.log')
+hdlr = logging.FileHandler('/tmp/Ghiaseddin.log')
 formatter = logging.Formatter('%(asctime)s %(levelname)s %(message)s')
 hdlr.setFormatter(formatter)
 logger.addHandler(hdlr)
