@@ -11,10 +11,14 @@ import numpy as np
 
 @click.command()
 @click.option('--dataset', type=click.Choice(['zappos1', 'lfw']), default='zappos1')
+@click.option('--augmentation', type=click.BOOL, default=False)
 @click.option('--attribute', type=click.INT, default=0)
 @click.option('--epochs', type=click.INT, default=10)
 @click.option('--attribute_split', type=click.INT, default=0)
-def main(dataset, attribute, epochs, attribute_split):
+@click.option('--do_log', type=click.BOOL, default=True, envvar='DO_LOG')
+def main(dataset, augmentation, attribute, epochs, attribute_split, do_log):
+    print do_log; exit;
+
     si = attribute_split
 
     if dataset == 'zappos1':
@@ -34,7 +38,8 @@ def main(dataset, attribute, epochs, attribute_split):
                                   optimizer=lasagne.updates.rmsprop,
                                   ranker_learning_rate=1e-4,
                                   extractor_learning_rate=1e-5,
-                                  ranker_nonlinearity=lasagne.nonlinearities.linear)
+                                  ranker_nonlinearity=lasagne.nonlinearities.linear,
+                                  do_log=do_log)
     # saliency stuff
     test_pair_ids = np.random.choice(range(len(dataset._test_targets)), size=10)
     saliency_folder_path = os.path.join(ghiaseddin.settings.result_models_root, "saliency|%s" % model.NAME)

@@ -5,7 +5,6 @@ import utils
 import numpy as np
 import itertools
 import boltons.iterutils
-import skimage.transform
 import keras_image_preprocessing
 
 
