@@ -5,7 +5,6 @@ import utils
 import numpy as np
 import itertools
 import boltons.iterutils
-import keras_image_preprocessing
 
 
 class Dataset(object):
@@ -33,39 +32,13 @@ class Dataset(object):
     _test_targets = None
     _image_adresses = None
 
-    def __init__(self, root, attribute_index, augmentation=False):
+    def __init__(self, root, attribute_index):
         self.root = root
         self.attribute_index = attribute_index
         assert 0 <= attribute_index < len(self._ATT_NAMES)
-        self.augmentation = augmentation
 
     def get_name(self):
-        name = "%s-%d" % (self.__class__.__name__, self.attribute_index)
-        if self.augmentation:
-            name = "%s-aug" % name
-        return name
-
-    @staticmethod
-    def _random_fliprl(img):
-        if np.random.rand() > 0.5:
-            return np.fliplr(img)
-        else:
-            return img
-
-    @staticmethod
-    def _random_rotate(img):
-        return keras_image_preprocessing.random_rotation(img, 20, row_index=0, col_index=1, channel_index=2)
-
-    @staticmethod
-    def _random_zoom(img):
-        return keras_image_preprocessing.random_zoom(img, (0.65, 0.6), row_index=0, col_index=1, channel_index=2)
-
-    @staticmethod
-    def random_augmentation(img):
-        img = Dataset._random_fliprl(img)
-        img = Dataset._random_zoom(img)
-        img = Dataset._random_rotate(img)
-        return img
+        return "%s-%d" % (self.__class__.__name__, self.attribute_index)
 
     def _show_image_path_target(self, img1_path, img2_path, target, augment=False):
         if target > 0.5:
@@ -80,13 +53,13 @@ class Dataset(object):
         ax2 = fig.add_subplot(122)
         img1 = utils.load_image(img1_path)
         if augment:
-            img1 = Dataset.random_augmentation(img1)
+            img1 = utils.random_augmentation(img1)
         ax1.imshow(img1)
         ax1.set_title('A')
         ax1.axis('off')
         img2 = utils.load_image(img2_path)
         if augment:
-            img2 = Dataset.random_augmentation(img2)
+            img2 = utils.random_augmentation(img2)
         ax2.imshow(img2)
         ax2.set_title('B')
         ax2.axis('off')
