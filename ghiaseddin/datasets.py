@@ -32,13 +32,17 @@ class Dataset(object):
     _test_targets = None
     _image_adresses = None
 
-    def __init__(self, root, attribute_index):
+    def __init__(self, root, attribute_index, augmentation=False):
         self.root = root
         self.attribute_index = attribute_index
         assert 0 <= attribute_index < len(self._ATT_NAMES)
+        self.augmentation = augmentation
 
     def get_name(self):
-        return "%s-%d" % (self.__class__.__name__, self.attribute_index)
+        name = "%s-%d" % (self.__class__.__name__, self.attribute_index)
+        if self.augmentation:
+            name = "%s-aug" % name
+        return name
 
     def _show_image_path_target(self, img1_path, img2_path, target):
         if target > 0.5:
