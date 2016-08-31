@@ -33,18 +33,34 @@ If you want to perform training yourself, you need to download some files (initi
 **Zappos50K**
 
 ```bash
-python /path/to/project/ghiaseddin/scripts/download_dataset_zappos.py
+python /path/to/project/ghiaseddin/scripts/download-dataset-zappos.py
 ```
 
 **LFW10**
 
 ```bash
-python /path/to/project/ghiaseddin/scripts/download_dataset_lfw10.py
+python /path/to/project/ghiaseddin/scripts/download-dataset-lfw10.py
+```
+
+**OSR and PubFig**
+
+```bash
+python /path/to/project/ghiaseddin/scripts/download-dataset-osr_pubfig.py
 ```
 
 #### Downloading initial weights (models pretrained on ILSVRC)
 
-_Coming Soon_
+**GoogLeNet**
+
+```bash
+python /path/to/project/ghiaseddin/scripts/download-weights-googlenet.py
+```
+
+**VGG16**
+
+```bash
+python /path/to/project/ghiaseddin/scripts/download-weights-vgg16.py
+```
 
 ### Training a new model
 
