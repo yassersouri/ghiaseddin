@@ -80,11 +80,21 @@ model.save('/path/to/model.pkl')
 
 ### Calculating accuracy of a model
 
-_Coming Soon_
+```python
+# calculates the relative attribute prediction accuracy
+print model.eval_accuracy()
+```
 
 ### Visualizing saliency
 
-_Coming Soon_
+```python
+# randomly generates saliency maps for 10 samples of the testing set
+fig = model.generate_saliency(size=10)
+# or you can specify which pairs
+fig = model.generate_saliency([10, 20, 30, 40])
+# and you can easily save the figure
+fig.savefig('/path/to/file/saliency.png')
+```
 
 ## Feedback
 
