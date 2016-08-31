@@ -164,7 +164,7 @@ class Zappos50K1(Dataset):
         self.split_index = split_index
 
         data_path = os.path.join(self.root, 'ut-zap50k-data')
-        images_path = os.path.join(self.root, 'images')  # TODO: Why?
+        images_path = os.path.join(self.root, 'ut-zap50k-images')
         imagepath_info = scipy.io.loadmat(os.path.join(data_path, 'image-path.mat'))['imagepath'].flatten()
         train_test_file = scipy.io.loadmat(os.path.join(data_path, 'train-test-splits.mat'))
         labels_file = scipy.io.loadmat(os.path.join(data_path, 'zappos-labels.mat'))
@@ -183,7 +183,19 @@ class Zappos50K1(Dataset):
         self._test_targets = np.zeros((len(test_index),), dtype=np.float32)
 
         # fill place holders
-        self._image_adresses = [os.path.join(images_path, p[0]) for p in imagepath_info]
+        self._image_adresses = []
+        for p in imagepath_info:  # you see this crazy for loop? yes I hate it too.
+            this_thing = str(p[0])
+            this_thing_parts = this_thing.rsplit('/', 1)
+            if this_thing_parts[0].endswith('.'):
+                this_thing_parts[0] = this_thing_parts[0][:-1]
+                this_thing = '/'.join(this_thing_parts)
+            if "Levi's " in this_thing_parts[0]:
+                this_thing_parts[0] = this_thing_parts[0].replace("Levi's ", "Levi's&#174; ")
+                this_thing = '/'.join(this_thing_parts)
+            self._image_adresses.append(os.path.join(images_path, this_thing))
+
+        # self._image_adresses = [os.path.join(images_path, p[0]) for p in imagepath_info]
         self._fill_pair_target(train_index, image_pairs_order, self._train_pairs, self._train_targets)
         self._fill_pair_target(test_index, image_pairs_order, self._test_pairs, self._test_targets)
 
