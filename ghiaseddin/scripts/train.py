@@ -11,13 +11,14 @@ import numpy as np
 
 @click.command()
 @click.option('--dataset', type=click.Choice(['zappos1', 'lfw']), default='zappos1')
+@click.option('--extractor', type=click.Choice(['googlenet', 'vgg'], default='googlenet'))
 @click.option('--augmentation', type=click.BOOL, default=False)
+@click.option('--baseline', type=click.BOOL, default=False)
 @click.option('--attribute', type=click.INT, default=0)
 @click.option('--epochs', type=click.INT, default=10)
 @click.option('--attribute_split', type=click.INT, default=0)
 @click.option('--do_log', type=click.BOOL, default=True, envvar='DO_LOG')
-def main(dataset, augmentation, attribute, epochs, attribute_split, do_log):
-
+def main(dataset, extractor, augmentation, baseline, attribute, epochs, attribute_split, do_log):
     si = attribute_split
 
     if dataset == 'zappos1':
@@ -30,17 +31,27 @@ def main(dataset, augmentation, attribute, epochs, attribute_split, do_log):
     sys.stdout.write('augmentation: %s\n' % str(augmentation))
     sys.stdout.flush()
 
-    # googlenet = ghiaseddin.GoogLeNet(ghiaseddin.settings.googlenet_weights, augmentation)
-    vgg = ghiaseddin.VGG16(ghiaseddin.settings.vgg16_weights, augmentation)
+    if extractor == 'googlenet':
+        ext = ghiaseddin.GoogLeNet(ghiaseddin.settings.googlenet_weights, augmentation)
+    elif extractor == 'vgg':
+        ext = ghiaseddin.VGG16(ghiaseddin.settings.vgg16_weights, augmentation)
 
-    model = ghiaseddin.Ghiaseddin(extractor=vgg,
+    extractor_learning_rate = 1e-5
+    if baseline:
+        extractor_learning_rate = 0
+
+    model = ghiaseddin.Ghiaseddin(extractor=ext,
                                   dataset=dataset,
                                   weight_decay=1e-5,
                                   optimizer=lasagne.updates.rmsprop,
                                   ranker_learning_rate=1e-4,
-                                  extractor_learning_rate=1e-5,
+                                  extractor_learning_rate=extractor_learning_rate,
                                   ranker_nonlinearity=lasagne.nonlinearities.linear,
                                   do_log=do_log)
+
+    if baseline:
+        model.NAME = "baseline|%s" % model.NAME
+
     # saliency stuff
     test_pair_ids = np.random.choice(range(len(dataset._test_targets)), size=10)
     saliency_folder_path = os.path.join(ghiaseddin.settings.result_models_root, "saliency|%s" % model.NAME)

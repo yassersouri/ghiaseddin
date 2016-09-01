@@ -1,6 +1,6 @@
-for i in $(seq 0 3)
+for j in $(seq 0 9)
 	do
-	for j in $(seq 0 9)
-		do python ghiaseddin/scripts/baseline.py --dataset zappos1 --attribute $i  --epochs 25 --attribute_split $j
+	for i in $(seq 0 3)
+		do python ghiaseddin/scripts/baseline.py --dataset zappos1 --extractor vgg --baseline true --attribute $i  --epochs 25 --attribute_split $j
 	done
 done
