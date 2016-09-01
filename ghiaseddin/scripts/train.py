@@ -11,7 +11,7 @@ import numpy as np
 
 @click.command()
 @click.option('--dataset', type=click.Choice(['zappos1', 'lfw']), default='zappos1')
-@click.option('--extractor', type=click.Choice(['googlenet', 'vgg'], default='googlenet'))
+@click.option('--extractor', type=click.Choice(['googlenet', 'vgg']), default='googlenet')
 @click.option('--augmentation', type=click.BOOL, default=False)
 @click.option('--baseline', type=click.BOOL, default=False)
 @click.option('--attribute', type=click.INT, default=0)
