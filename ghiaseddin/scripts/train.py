@@ -27,11 +27,13 @@ def main(dataset, augmentation, attribute, epochs, attribute_split, do_log):
 
     tic = dt.now()
     sys.stdout.write('===================AI: %d, A: %s, SI: %d===================\n' % (attribute, dataset._ATT_NAMES[attribute], si))
+    sys.stdout.write('augmentation: %s\n' % str(augmentation))
     sys.stdout.flush()
 
-    googlenet = ghiaseddin.GoogLeNet(ghiaseddin.settings.googlenet_weights)
+    # googlenet = ghiaseddin.GoogLeNet(ghiaseddin.settings.googlenet_weights, augmentation)
+    vgg = ghiaseddin.VGG16(ghiaseddin.settings.vgg16_weights, augmentation)
 
-    model = ghiaseddin.Ghiaseddin(extractor=googlenet,
+    model = ghiaseddin.Ghiaseddin(extractor=vgg,
                                   dataset=dataset,
                                   weight_decay=1e-5,
                                   optimizer=lasagne.updates.rmsprop,
