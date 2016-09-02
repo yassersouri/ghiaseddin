@@ -10,7 +10,7 @@ import numpy as np
 
 
 @click.command()
-@click.option('--dataset', type=click.Choice(['zappos1', 'lfw']), default='zappos1')
+@click.option('--dataset', type=click.Choice(['zappos1', 'lfw', 'osr', 'pubfig']), default='zappos1')
 @click.option('--extractor', type=click.Choice(['googlenet', 'vgg']), default='googlenet')
 @click.option('--augmentation', type=click.BOOL, default=False)
 @click.option('--baseline', type=click.BOOL, default=False)
@@ -25,6 +25,10 @@ def main(dataset, extractor, augmentation, baseline, attribute, epochs, attribut
         dataset = ghiaseddin.Zappos50K1(ghiaseddin.settings.zappos_root, attribute_index=attribute, split_index=si)
     elif dataset == 'lfw':
         dataset = ghiaseddin.LFW10(ghiaseddin.settings.lfw10_root, attribute_index=attribute)
+    elif dataset == 'osr':
+        dataset = ghiaseddin.OSR(ghiaseddin.settings.osr_root, attribute_index=attribute)
+    elif dataset == 'pubfig':
+        dataset = ghiaseddin.PubFig(ghiaseddin.settings.pubfig_root, attribute_index=attribute)
 
     tic = dt.now()
     sys.stdout.write('===================AI: %d, A: %s, SI: %d===================\n' % (attribute, dataset._ATT_NAMES[attribute], si))
