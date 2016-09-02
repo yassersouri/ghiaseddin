@@ -29,6 +29,7 @@ def main(dataset, extractor, augmentation, baseline, attribute, epochs, attribut
     tic = dt.now()
     sys.stdout.write('===================AI: %d, A: %s, SI: %d===================\n' % (attribute, dataset._ATT_NAMES[attribute], si))
     sys.stdout.write('augmentation: %s\n' % str(augmentation))
+    sys.stdout.write('random seed: %s\n' % str(ghiaseddin.settings.RANDOM_SEED))
     sys.stdout.flush()
 
     if extractor == 'googlenet':
