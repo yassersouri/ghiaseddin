@@ -313,6 +313,7 @@ class OSR(Dataset):
     """The dataset helper class for OSR dataset."""
 
     _ATT_NAMES = ['natural', 'open', 'perspective', 'size-large', 'diagonal-plane', 'depth-close']
+    TEST_FRACTION = 0.05
 
     def __init__(self, root, attribute_index):
         super(OSR, self).__init__(root, attribute_index)
@@ -354,3 +355,14 @@ class OSR(Dataset):
             self._test_pairs[cnt][1] = Xtest[j]
             self._test_targets[cnt] = (ytest[i, attribute_index] == ytest[j, attribute_index]) * 0.5 +\
                                       (ytest[i, attribute_index] > ytest[j, attribute_index]) * 1.0
+
+        # Since the number of test_pairs are very large, nearly 3 millions, we only sample 5% of them
+        # for the actual evaluation
+        the_test_length = len(self._test_targets)
+        fraction_of_the_length = int(the_test_length * self.TEST_FRACTION)
+
+        indices = np.arange(len(self._test_targets), dtype=np.int)
+        np.random.shuffle(indices)
+
+        self._test_pairs = self._test_pairs[indices][:fraction_of_the_length]
+        self._test_targets = self._test_targets[indices][:fraction_of_the_length]
