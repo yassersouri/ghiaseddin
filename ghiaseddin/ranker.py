@@ -168,7 +168,7 @@ class Ghiaseddin(object):
 
         self.log_step += 1
         if self.debug:
-            logger.debug("1 minibatch took: %s", str(toc - tic))
+            logger.debug("%d minibatch took: %s", (self.log_step, str(toc - tic)))
         return loss
 
     def train_one_epoch(self):
@@ -229,7 +229,7 @@ class Ghiaseddin(object):
     def eval_accuracy(self):
         tic = dt.now()
         test_generator = self.dataset.test_generator(
-            batch_size=self.train_batch_size)
+            batch_size=self.train_batch_size * 4)
         total = 0
         correct = 0
 

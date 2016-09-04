@@ -63,12 +63,14 @@ def main(dataset, extractor, augmentation, baseline, attribute, epochs, attribut
     boltons.fileutils.mkdir_p(saliency_folder_path)
 
     accuracies = []
-    for _ in range(epochs):
+    for i in range(epochs):
         model.train_one_epoch()
-        acc = model.eval_accuracy() * 100
-        accuracies.append(acc)
-        sys.stdout.write("%2.4f\n" % acc)
-        sys.stdout.flush()
+
+        if i == epochs - 1:
+            acc = model.eval_accuracy() * 100
+            accuracies.append(acc)
+            sys.stdout.write("%2.4f\n" % acc)
+            sys.stdout.flush()
 
         # save saliency figure
         fig = model.generate_saliency(test_pair_ids)
@@ -78,9 +80,6 @@ def main(dataset, extractor, augmentation, baseline, attribute, epochs, attribut
         model.conv1_filters()
 
     model.save()
-
-    # save missclassified
-    model.generate_misclassified()
 
     # Save raw accuracy values to file
     boltons.fileutils.mkdir_p(ghiaseddin.settings.result_models_root)
