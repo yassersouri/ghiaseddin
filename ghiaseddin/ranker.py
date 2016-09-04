@@ -168,7 +168,7 @@ class Ghiaseddin(object):
 
         self.log_step += 1
         if self.debug:
-            logger.debug("%d minibatch took: %s", (self.log_step, str(toc - tic)))
+            logger.debug("%d minibatch took: %s" % (self.log_step, str(toc - tic)))
         return loss
 
     def train_one_epoch(self):
