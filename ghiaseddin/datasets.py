@@ -196,13 +196,14 @@ class Zappos50K1(Dataset):
             self._image_adresses.append(os.path.join(images_path, this_thing))
 
         # self._image_adresses = [os.path.join(images_path, p[0]) for p in imagepath_info]
-        self._fill_pair_target(train_index, image_pairs_order, self._train_pairs, self._train_targets)
-        self._fill_pair_target(test_index, image_pairs_order, self._test_pairs, self._test_targets)
+        Zappos50K1._fill_pair_target(train_index, image_pairs_order, self._train_pairs, self._train_targets)
+        Zappos50K1._fill_pair_target(test_index, image_pairs_order, self._test_pairs, self._test_targets)
 
     def get_name(self):
         return "Zap1-%d-%d" % (self.attribute_index, self.split_index)
 
-    def _fill_pair_target(self, indexes, pair_order, pairs, targets):
+    @staticmethod
+    def _fill_pair_target(indexes, pair_order, pairs, targets):
         for i, id in enumerate(indexes):
             pair_info = pair_order[id - 1]  # because of matlab indexing
             pairs[i, :] = pair_info[0:2] - 1
@@ -214,6 +215,52 @@ class Zappos50K1(Dataset):
                 targets[i] = 0.5
             else:
                 raise Exception("invalid target")
+
+
+class Zappos50K2(Dataset):
+    _ATT_NAMES = ['open', 'pointy', 'sporty', 'comfort']
+
+    def __init__(self, root, attribute_index):
+        super(Zappos50K2, self).__init__(root, attribute_index)
+
+        data_path = os.path.join(self.root, 'ut-zap50k-data')
+        images_path = os.path.join(self.root, 'ut-zap50k-images')
+        imagepath_info = scipy.io.loadmat(os.path.join(data_path, 'image-path.mat'))['imagepath'].flatten()
+        train_test_file = scipy.io.loadmat(os.path.join(data_path, 'train-test-splits.mat'))
+        labels_file = scipy.io.loadmat(os.path.join(data_path, 'zappos-labels.mat'))
+        labels_file_fg = scipy.io.loadmat(os.path.join(data_path, 'zappos-labels-fg.mat'))
+
+        train_info = train_test_file['trainIndexAll'].flatten()
+        test_info = train_test_file['testIndexAll'].flatten()
+
+        image_pairs_order = labels_file['mturkOrder'].flatten()[attribute_index].astype(int)
+        image_pairs_order_fg = labels_file_fg['mturkHard'].flatten()[attribute_index].astype(int)
+        train_index = np.arange(len(image_pairs_order), dtype=np.int)
+        test_index = np.arange(len(image_pairs_order_fg), dtype=np.int)
+
+
+        # create placeholders
+        self._train_pairs = np.zeros((len(image_pairs_order), 2), dtype=np.int)
+        self._train_targets = np.zeros((len(image_pairs_order),), dtype=np.float32)
+        self._test_pairs = np.zeros((len(image_pairs_order_fg), 2), dtype=np.int)
+        self._test_targets = np.zeros((len(image_pairs_order_fg),), dtype=np.float32)
+
+        # fill place holders
+        self._image_adresses = []
+        for p in imagepath_info:  # you see this crazy for loop? yes I hate it too.
+            this_thing = str(p[0])
+            this_thing_parts = this_thing.rsplit('/', 1)
+            if this_thing_parts[0].endswith('.'):
+                this_thing_parts[0] = this_thing_parts[0][:-1]
+                this_thing = '/'.join(this_thing_parts)
+            if "Levi's " in this_thing_parts[0]:
+                this_thing_parts[0] = this_thing_parts[0].replace("Levi's ", "Levi's&#174; ")
+                this_thing = '/'.join(this_thing_parts)
+            self._image_adresses.append(os.path.join(images_path, this_thing))
+
+
+        Zappos50K1._fill_pair_target(train_index, image_pairs_order, self._train_pairs, self._train_targets)
+        Zappos50K1._fill_pair_target(test_index, image_pairs_order_fg, self._test_pairs, self._test_targets)
 
 
 class LFW10(Dataset):
