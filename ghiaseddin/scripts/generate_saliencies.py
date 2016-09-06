@@ -26,26 +26,26 @@ def main(dataset):
     for AI in range(len(DS._ATT_NAMES)):
         ext = ghiaseddin.VGG16(weights=ghiaseddin.settings.vgg16_weights)
         if dataset == 'zappos1':
-            dataset = ghiaseddin.Zappos50K1(ghiaseddin.settings.zappos_root, attribute_index=AI, split_index=0)
+            dst = ghiaseddin.Zappos50K1(ghiaseddin.settings.zappos_root, attribute_index=AI, split_index=0)
         elif dataset == 'lfw':
-            dataset = ghiaseddin.LFW10(ghiaseddin.settings.lfw10_root, attribute_index=AI)
+            dst = ghiaseddin.LFW10(ghiaseddin.settings.lfw10_root, attribute_index=AI)
         elif dataset == 'osr':
-            dataset = ghiaseddin.OSR(ghiaseddin.settings.osr_root, attribute_index=AI)
+            dst = ghiaseddin.OSR(ghiaseddin.settings.osr_root, attribute_index=AI)
         elif dataset == 'pubfig':
-            dataset = ghiaseddin.PubFig(ghiaseddin.settings.pubfig_root, attribute_index=AI)
-        model = ghiaseddin.Ghiaseddin(ext, dataset)
+            dst = ghiaseddin.PubFig(ghiaseddin.settings.pubfig_root, attribute_index=AI)
+        model = ghiaseddin.Ghiaseddin(ext, dst)
         try:
             model.load()
             
             boltons.fileutils.mkdir_p(results_folder)
             for i in range(10):
                 fig = model.generate_saliency(size=1)
-                fig.savefig(os.path.join(results_folder, '%s-%d.png') % (dataset._ATT_NAMES[AI], i))
+                fig.savefig(os.path.join(results_folder, '%s-%d.png') % (dst._ATT_NAMES[AI], i))
 
-            sys.stdout.write("%s\n" % dataset._ATT_NAMES[AI])
+            sys.stdout.write("%s\n" % dst._ATT_NAMES[AI])
             sys.stdout.flush()
         except:
-            sys.stdout.write('notfound %s\n' % dataset._ATT_NAMES[AI])
+            sys.stdout.write('notfound %s\n' % dst._ATT_NAMES[AI])
             sys.stdout.flush()
 
 if __name__ == '__main__':
