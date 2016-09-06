@@ -390,8 +390,8 @@ class Ghiaseddin(object):
             # preprocess saliency
             sal_resize = skimage.transform.resize(saliency.max(axis=-1), img.shape[:2])
             sal_resize = skimage.filters.gaussian(sal_resize, 10)
-            sal_resize = sal_resize / sal_resize.min()
-            sal_resize[sal_resize < 0] = 0
+            sal_resize = np.absolute(sal_resize)
+            sal_resize = (sal_resize - sal_resize.min()) / (sal_resize.max() - sal_resize.min() + 1e-5)
 
             ax.matshow(sal_resize, alpha=1)
             ax.imshow(skimage.color.rgb2gray(img), cmap=plt.cm.gray, alpha=0.5)
