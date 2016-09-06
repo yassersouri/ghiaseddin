@@ -22,8 +22,8 @@ def generate_feature_embedding(model, batch_size=128):
     emb_func = theano.function([inp], [outp, outrank])
 
     def iterate_minibatch(batch_size):
-        for idx in xrange(np.ceil(len(model.dataset._image_addresses) / batch_size)):
-            images = np.zeros((BATCH_SIZE, 3, model.extractor._input_height, model.extractor._input_width))
+        for idx in xrange(int(np.ceil(len(model.dataset._image_addresses) / batch_size))):
+            images = np.zeros((batch_size, 3, model.extractor._input_height, model.extractor._input_width))
             for i in xrange(batch_size):
                 if idx * batch_size + i >= len(model.dataset._image_addresses):
                     images = images[:i, ...]
@@ -42,7 +42,7 @@ def generate_feature_embedding(model, batch_size=128):
     for images in iterate_minibatch(batch_size):
         emb, rank = emb_func(images.astype(np.float32))
         deep_feats[idx:idx + images.shape[0], :] = emb
-        deep_ranks[idx:idx + images.shape[0]] = r.squeeze()
+        deep_ranks[idx:idx + images.shape[0]] = rank.squeeze()
         print (idx + 1), (idx + images.shape[0])
         idx += images.shape[0]
     return deep_feats, deep_ranks
