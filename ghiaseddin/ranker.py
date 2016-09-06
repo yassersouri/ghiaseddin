@@ -397,7 +397,7 @@ class Ghiaseddin(object):
             ax.imshow(skimage.color.rgb2gray(img), cmap=plt.cm.gray, alpha=0.5)
             ax.axis('off')
 
-        fig = plt.figure(figsize=(15, 3 * size))
+        fig = plt.figure(figsize=(10, 2 * size))
         for i in range(size):
             # show first image
             ax = fig.add_subplot(size, 4, 1 + i * 4)
