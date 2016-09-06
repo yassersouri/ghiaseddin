@@ -50,7 +50,7 @@ def generate_feature_embedding(model, batch_size=128):
 
 if __name__ == '__main__':
     att_index = 0 # Bald head attribute
-    dataset = ghiaseddin.datasets.LFW10(root=ghiaseddin.settings.zappos_root, attribute_index=att_index)
+    dataset = ghiaseddin.datasets.LFW10(root=ghiaseddin.settings.lfw10_root, attribute_index=att_index)
     extractor = ghiaseddin.VGG16(weights=ghiaseddin.settings.vgg16_weights)
     model = ghiaseddin.Ghiaseddin(extractor=extractor, dataset=dataset)
     model.load()
