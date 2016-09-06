@@ -4,7 +4,7 @@ import theano.tensor as T
 import numpy as np
 import io
 import skimage.transform
-import scipy
+import scipy as sc
 from scipy import io
 from os import path
 import sklearn
