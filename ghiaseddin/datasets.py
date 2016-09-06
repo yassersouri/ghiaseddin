@@ -15,9 +15,9 @@ class Dataset(object):
 
     This helper needs the following properties to successfully perform the necessary actions:
         1. _ATT_NAMES: It is a 1 dimensional list or list-like object, containing string names for the attributes in the dataset.
-        2. _image_adresses: It is a 1 dimensional list or list-like object, containing absolute image address for each image in the dataset.
+        2. _image_addresses: It is a 1 dimensional list or list-like object, containing absolute image address for each image in the dataset.
         3. _train_pairs: It is a (n x 2) array where n in the number of training pairs and they contain index of the images as the image
-        address is specified with that index in _image_adresses.
+        address is specified with that index in _image_addresses.
         4. _train_targets: It is a (n) shaped array where n in the number of training pairs and contains the target posterior for our method
         ($\in [0, 1]$).
         5. _test_pairs: Similar to _train_pairs but for testing pairs.
@@ -31,7 +31,7 @@ class Dataset(object):
     _train_targets = None
     _test_pairs = None
     _test_targets = None
-    _image_adresses = None
+    _image_addresses = None
 
     def __init__(self, root, attribute_index, augmentation=False):
         self.root = root
@@ -99,14 +99,14 @@ class Dataset(object):
         pair = self._test_pairs[pair_id, :] if test else self._train_pairs[pair_id, :]
         target = self._test_targets[pair_id] if test else self._train_targets[pair_id]
 
-        img1_path = self._image_adresses[pair[0]]
-        img2_path = self._image_adresses[pair[1]]
+        img1_path = self._image_addresses[pair[0]]
+        img2_path = self._image_addresses[pair[1]]
 
         self._show_image_path_target(img1_path, img2_path, target, augment)
 
     def _iterate_pair_target(self, indices, values, targets):
         for i in indices:
-            yield ((self._image_adresses[values[i, 0]], self._image_adresses[values[i, 1]]), targets[i])
+            yield ((self._image_addresses[values[i, 0]], self._image_addresses[values[i, 1]]), targets[i])
 
     def train_generator(self, batch_size, shuffle=True, cut_tail=True):
         """
@@ -183,7 +183,7 @@ class Zappos50K1(Dataset):
         self._test_targets = np.zeros((len(test_index),), dtype=np.float32)
 
         # fill place holders
-        self._image_adresses = []
+        self._image_addresses = []
         for p in imagepath_info:  # you see this crazy for loop? yes I hate it too.
             this_thing = str(p[0])
             this_thing_parts = this_thing.rsplit('/', 1)
@@ -193,9 +193,8 @@ class Zappos50K1(Dataset):
             if "Levi's " in this_thing_parts[0]:
                 this_thing_parts[0] = this_thing_parts[0].replace("Levi's ", "Levi's&#174; ")
                 this_thing = '/'.join(this_thing_parts)
-            self._image_adresses.append(os.path.join(images_path, this_thing))
+            self._image_addresses.append(os.path.join(images_path, this_thing))
 
-        # self._image_adresses = [os.path.join(images_path, p[0]) for p in imagepath_info]
         Zappos50K1._fill_pair_target(train_index, image_pairs_order, self._train_pairs, self._train_targets)
         Zappos50K1._fill_pair_target(test_index, image_pairs_order, self._test_pairs, self._test_targets)
 
@@ -246,7 +245,7 @@ class Zappos50K2(Dataset):
         self._test_targets = np.zeros((len(image_pairs_order_fg),), dtype=np.float32)
 
         # fill place holders
-        self._image_adresses = []
+        self._image_addresses = []
         for p in imagepath_info:  # you see this crazy for loop? yes I hate it too.
             this_thing = str(p[0])
             this_thing_parts = this_thing.rsplit('/', 1)
@@ -256,7 +255,7 @@ class Zappos50K2(Dataset):
             if "Levi's " in this_thing_parts[0]:
                 this_thing_parts[0] = this_thing_parts[0].replace("Levi's ", "Levi's&#174; ")
                 this_thing = '/'.join(this_thing_parts)
-            self._image_adresses.append(os.path.join(images_path, this_thing))
+            self._image_addresses.append(os.path.join(images_path, this_thing))
 
 
         Zappos50K1._fill_pair_target(train_index, image_pairs_order, self._train_pairs, self._train_targets)
@@ -306,7 +305,7 @@ class LFW10(Dataset):
                 self._test_targets[i] = 0.5  # two images have about the same strength
 
         # fill place holders
-        self._image_adresses = [os.path.join(images_path, '{}.jpg'.format(p + 1)) for p in xrange(2000)]
+        self._image_addresses = [os.path.join(images_path, '{}.jpg'.format(p + 1)) for p in xrange(2000)]
 
 
 class PubFig(Dataset):
@@ -322,7 +321,7 @@ class PubFig(Dataset):
         data_file = scipy.io.loadmat(os.path.join(data_path, 'data.mat'), appendmat=False)
         # self._ATT_NAMES = map(lambda x: x[0], data_file['attribute_names'][0])
         im_names = data_file['im_names'].squeeze()
-        self._image_adresses = [os.path.join(images_path, im_names[i][0]) for i in xrange(len(im_names))]
+        self._image_addresses = [os.path.join(images_path, im_names[i][0]) for i in xrange(len(im_names))]
         class_labels = data_file['class_labels'][:, 0]
         used_for_training = data_file['used_for_training'][:, 0]
 
@@ -370,7 +369,7 @@ class OSR(Dataset):
         data_file = scipy.io.loadmat(os.path.join(data_path, 'data.mat'), appendmat=False)
         # self._ATT_NAMES = map(lambda x: x[0], data_file['attribute_names'][0])
         im_names = data_file['im_names'].squeeze()
-        self._image_adresses = [os.path.join(images_path, im_names[i][0]) for i in xrange(len(im_names))]
+        self._image_addresses = [os.path.join(images_path, im_names[i][0]) for i in xrange(len(im_names))]
         class_labels = data_file['class_labels'][:, 0]
         used_for_training = data_file['used_for_training'][:, 0]
 

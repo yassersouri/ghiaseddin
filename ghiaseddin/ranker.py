@@ -362,8 +362,8 @@ class Ghiaseddin(object):
         images = []
         for i in range(size):
             pair = self.dataset._test_pairs[test_pair_ids[i], :]
-            img1_path = self.dataset._image_adresses[pair[0]]
-            img2_path = self.dataset._image_adresses[pair[1]]
+            img1_path = self.dataset._image_addresses[pair[0]]
+            img2_path = self.dataset._image_addresses[pair[1]]
             img1 = utils.load_image(img1_path)
             img2 = utils.load_image(img2_path)
 
