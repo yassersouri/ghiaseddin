@@ -76,6 +76,46 @@ To reproduce our results you can run the following scripts which will output the
 ./run-pubfig.sh # for PubFig experiment
 ```
 
+### Our results
+
+We report mean and std of ranking prediction accuracy over 3 different runs for OSR, PubFig, LFW10 and Zappos50k2 (fine-grained) and over the 10 splits (provided with the dataset) for Zappos50k1.
+
+Currently (7th Sep 2016) our results on OSR, PubFig, Zappos50k1 and Zappos50k2 are state-of-the-art to our knowledge.
+
+**OSR**
+
+| Method       |  Natural        |  Open           |  Perspective    |  Large Size     |  Diagonal Plane       |  Depth Close    |  Mean               | 
+|--------------|-----------------|-----------------|-----------------|-----------------|-----------------|-----------------|---------------------| 
+| Ours (VGG16) |  99.40 (± 0.10) |  97.44 (± 0.16) |  96.88 (± 0.13) |  96.79 (± 0.32) |  98.43 (± 0.23) |  97.65 (± 0.16) |  **97.77 (± 0.10)** | 
+
+
+**PubFig**
+
+| Method       |  Male           |  White          |  Young          |  Smiling        |  Chubby         |  Visible Forehead   |  Bushy Eyebrows        |  Narrow Eyes            |  Pointy Nose           |  Big Lips            |  Round Face           |  Mean               | 
+|--------------|-----------------|-----------------|-----------------|-----------------|-----------------|-----------------|-----------------|-----------------|-----------------|-----------------|-----------------|---------------------| 
+| Ours (VGG16) |  95.50 (± 0.36) |  94.60 (± 0.55) |  94.33 (± 0.36) |  95.36 (± 0.56) |  92.32 (± 0.36) |  97.28 (± 0.49) |  94.53 (± 0.64) |  93.19 (± 0.51) |  94.24 (± 0.24) |  93.62 (± 0.20) |  94.76 (± 0.24) |  **94.52 (± 0.08)** | 
+
+
+**LFW10**
+
+| Method       |  Bald Head      |  Dark Hair      |  Eyes Open      |  Good Looking   |  Masculine Looking |  Mouth Open     |  Smile          |  Visible Teeth  |  Visible Forehead |  Young          |  Mean               | 
+|--------------|-----------------|-----------------|-----------------|-----------------|--------------------|-----------------|-----------------|-----------------|-------------------|-----------------|---------------------| 
+| Ours (VGG16) |  81.14 (± 3.39) |  88.92 (± 0.75) |  74.44 (± 5.97) |  70.28 (± 0.54) |  98.08 (± 0.33)    |  85.46 (± 0.70) |  82.49 (± 1.41) |  82.77 (± 2.15) |  81.90 (± 2.00)   |  76.33 (± 0.43) |  **82.18 (± 1.08)** | 
+
+**Zappos50k1**
+
+| Method       |  Open           |  Pointy         |  Sporty         |  Comfort        |  Mean               | 
+|--------------|-----------------|-----------------|-----------------|-----------------|---------------------| 
+| Ours (VGG16) |  95.37 (± 0.82) |  94.43 (± 0.75) |  97.30 (± 0.81) |  95.57 (± 0.97) |  **95.67 (± 0.49)** | 
+
+**Zappos50k2 (fine-grained)**
+
+| Method       |  Open           |  Pointy         |  Sporty         |  Comfort        |  Mean               | 
+|--------------|-----------------|-----------------|-----------------|-----------------|---------------------| 
+| Ours (VGG16) |  73.45 (± 1.23) |  68.20 (± 0.18) |  73.07 (± 0.75) |  70.31 (± 1.50) |  **71.26 (± 0.50)** | 
+
+
+
 ## Doing your own experiments
 
 ### Training a new model
@@ -131,35 +171,47 @@ fig.savefig('/path/to/file/saliency.png')
 Here are some example saliencies (Not all saliencies are easily interpretable as these):
 
 **OSR - Natural**
+
 ![Natural](https://github.com/yassersouri/ghiaseddin/blob/master/images/natural-2.png)
+
 ![Natural](https://github.com/yassersouri/ghiaseddin/blob/master/images/natural-5.png)
 
 **Zappos50k1 - Open**
+
 ![Open](https://github.com/yassersouri/ghiaseddin/blob/master/images/open-3.png)
+
 ![Open](https://github.com/yassersouri/ghiaseddin/blob/master/images/open-6.png)
 
 **Zappos50k1 - Pointy**
+
 ![Pointy](https://github.com/yassersouri/ghiaseddin/blob/master/images/pointy-1.png)
+
 ![Pointy](https://github.com/yassersouri/ghiaseddin/blob/master/images/pointy-7.png)
 
 **LFW10 - Bald Head**
+
 ![Bald Head](https://github.com/yassersouri/ghiaseddin/blob/master/images/baldhead-1.png)
+
 ![Bald Head](https://github.com/yassersouri/ghiaseddin/blob/master/images/baldhead-8.png)
 
 **LFW10 - Good Looking**
+
 ![Good Looking](https://github.com/yassersouri/ghiaseddin/blob/master/images/goodlooking-2.png)
+
 ![Good Looking](https://github.com/yassersouri/ghiaseddin/blob/master/images/goodlooking-7.png)
 
 ## Reference
 
 If you use this code in your research please consider citing our paper:
 
+```
 @inproceedings{souri2016dra,
   title={Deep Relative Attributes},
   author={Souri, Yaser and Noury, Erfan and Adeli, Ehsan},
   booktitle={ACCV},
   year={2016}
 }
+```
 
 
 ## Feedback
