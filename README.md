@@ -1,4 +1,5 @@
-![Ghiaseddin](https://github.com/yassersouri/ghiaseddin/blob/master/ghiaseddin.png)
+![Ghiaseddin](https://github.com/yassersouri/ghiaseddin/blob/master/images/ghiaseddin.png)
+
 # Ghiaseddin - قیاس الدین
 
 This repo contains the code for the paper "Deep Relative Attributes" by Yaser Souri, Erfan Noury, Ehsan Adeli Mosabbeb.
@@ -22,13 +23,10 @@ To visualize the training procedure I have used [pastalog](https://github.com/re
 
 For a complete list of dependencies and their versions see `requirements.txt`.
 
-## Running the experiments
-
-### Downloading the necessary files
-
+## Downloading files
 If you want to perform training yourself, you need to download some files (initial weights files and dataset images).
 
-#### Downloading datasets
+### Downloading datasets
 
 **Zappos50K**
 
@@ -48,7 +46,7 @@ python /path/to/project/ghiaseddin/scripts/download-dataset-lfw10.py
 python /path/to/project/ghiaseddin/scripts/download-dataset-osr_pubfig.py
 ```
 
-#### Downloading initial weights (models pretrained on ILSVRC)
+### Downloading initial weights (models pretrained on ILSVRC)
 
 **GoogLeNet**
 
@@ -61,6 +59,24 @@ python /path/to/project/ghiaseddin/scripts/download-weights-googlenet.py
 ```bash
 python /path/to/project/ghiaseddin/scripts/download-weights-vgg16.py
 ```
+
+## Running our experiments (reproducing our results)
+
+We have used Titan Black, Titan X, and Titan 980 Ti GPUs to produce our results.
+
+The random seed can be set at `ghiaseddin/settings.py`. We have used 0, 1 and 2 as our random seeds for Zappos50k2, LFW10, OSR and PubFig experiments. (Zappos50k1 already has 10 different splits of training data so we have only run the full experiment once with 0 as random seed)
+
+To reproduce our results you can run the following scripts which will output the accuracies.
+
+```bash
+./run-zappos1.sh # for Zappos50k1 experiment
+./run-zappos2.sh # for Zappos50k2 experiment
+./run-lfw.sh # for LFW10 experiment
+./run-osr.sh # for OSR experiment
+./run-pubfig.sh # for PubFig experiment
+```
+
+## Doing your own experiments
 
 ### Training a new model
 
@@ -111,6 +127,40 @@ fig = model.generate_saliency([10, 20, 30, 40])
 # and you can easily save the figure
 fig.savefig('/path/to/file/saliency.png')
 ```
+
+Here are some example saliencies (Not all saliencies are easily interpretable as these):
+
+**OSR - Natural**
+![Natural](https://github.com/yassersouri/ghiaseddin/blob/master/images/natural-2.png)
+![Natural](https://github.com/yassersouri/ghiaseddin/blob/master/images/natural-5.png)
+
+**Zappos50k1 - Open**
+![Open](https://github.com/yassersouri/ghiaseddin/blob/master/images/open-3.png)
+![Open](https://github.com/yassersouri/ghiaseddin/blob/master/images/open-6.png)
+
+**Zappos50k1 - Pointy**
+![Pointy](https://github.com/yassersouri/ghiaseddin/blob/master/images/pointy-1.png)
+![Pointy](https://github.com/yassersouri/ghiaseddin/blob/master/images/pointy-7.png)
+
+**LFW10 - Bald Head**
+![Bald Head](https://github.com/yassersouri/ghiaseddin/blob/master/images/baldhead-1.png)
+![Bald Head](https://github.com/yassersouri/ghiaseddin/blob/master/images/baldhead-8.png)
+
+**LFW10 - Good Looking**
+![Good Looking](https://github.com/yassersouri/ghiaseddin/blob/master/images/goodlooking-2.png)
+![Good Looking](https://github.com/yassersouri/ghiaseddin/blob/master/images/goodlooking-7.png)
+
+## Reference
+
+If you use this code in your research please consider citing our paper:
+
+@inproceedings{souri2016dra,
+  title={Deep Relative Attributes},
+  author={Souri, Yaser and Noury, Erfan and Adeli, Ehsan},
+  booktitle={ACCV},
+  year={2016}
+}
+
 
 ## Feedback
 
