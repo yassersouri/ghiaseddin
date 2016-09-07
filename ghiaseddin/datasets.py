@@ -225,18 +225,13 @@ class Zappos50K2(Dataset):
         data_path = os.path.join(self.root, 'ut-zap50k-data')
         images_path = os.path.join(self.root, 'ut-zap50k-images')
         imagepath_info = scipy.io.loadmat(os.path.join(data_path, 'image-path.mat'))['imagepath'].flatten()
-        train_test_file = scipy.io.loadmat(os.path.join(data_path, 'train-test-splits.mat'))
         labels_file = scipy.io.loadmat(os.path.join(data_path, 'zappos-labels.mat'))
         labels_file_fg = scipy.io.loadmat(os.path.join(data_path, 'zappos-labels-fg.mat'))
-
-        train_info = train_test_file['trainIndexAll'].flatten()
-        test_info = train_test_file['testIndexAll'].flatten()
 
         image_pairs_order = labels_file['mturkOrder'].flatten()[attribute_index].astype(int)
         image_pairs_order_fg = labels_file_fg['mturkHard'].flatten()[attribute_index].astype(int)
         train_index = np.arange(len(image_pairs_order), dtype=np.int)
         test_index = np.arange(len(image_pairs_order_fg), dtype=np.int)
-
 
         # create placeholders
         self._train_pairs = np.zeros((len(image_pairs_order), 2), dtype=np.int)
@@ -256,7 +251,6 @@ class Zappos50K2(Dataset):
                 this_thing_parts[0] = this_thing_parts[0].replace("Levi's ", "Levi's&#174; ")
                 this_thing = '/'.join(this_thing_parts)
             self._image_addresses.append(os.path.join(images_path, this_thing))
-
 
         Zappos50K1._fill_pair_target(train_index, image_pairs_order, self._train_pairs, self._train_targets)
         Zappos50K1._fill_pair_target(test_index, image_pairs_order_fg, self._test_pairs, self._test_targets)
