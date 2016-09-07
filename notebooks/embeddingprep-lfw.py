@@ -1,19 +1,13 @@
 from __future__ import division
 import theano
-import theano.tensor as T
 import numpy as np
-import io
-import skimage.transform
-import scipy as sc
-from scipy import io
-from os import path
-import sklearn
 from sklearn.manifold import TSNE
-import cPickle as pickle
+import scipy as sc
 import lasagne
 import sys
 sys.path.append('../')
 import ghiaseddin
+
 
 def generate_feature_embedding(model, batch_size=128):
     inp = model.extractor.get_input_var()
@@ -49,14 +43,14 @@ def generate_feature_embedding(model, batch_size=128):
 
 
 if __name__ == '__main__':
-    att_index = 0 # Bald head attribute
+    att_index = 4  # Bald head attribute
     dataset = ghiaseddin.datasets.LFW10(root=ghiaseddin.settings.lfw10_root, attribute_index=att_index)
     extractor = ghiaseddin.VGG16(weights=ghiaseddin.settings.vgg16_weights)
     model = ghiaseddin.Ghiaseddin(extractor=extractor, dataset=dataset)
     model.load()
     deep_feats, deep_ranks = generate_feature_embedding(model)
     rank_ordering = sc.stats.rankdata(deep_ranks)
-    ranknet_transed = TSNE(random_state=12345).fit_transform(deep_feats)
+    ranknet_transed = TSNE(random_state=ghiaseddin.settings.RANDOM_SEED).fit_transform(deep_feats)
 
     np.save('tsne_ranknet_lfw_{}.npy'.format(att_index), ranknet_transed)
     np.save('rankordering_lfw_{}.npy'.format(att_index), rank_ordering)

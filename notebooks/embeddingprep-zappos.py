@@ -1,19 +1,13 @@
 from __future__ import division
 import theano
-import theano.tensor as T
 import numpy as np
-import io
-import skimage.transform
 import scipy as sc
-from scipy import io
-from os import path
-import sklearn
 from sklearn.manifold import TSNE
-import cPickle as pickle
 import lasagne
 import sys
 sys.path.append('../')
 import ghiaseddin
+
 
 def generate_feature_embedding(model, batch_size=128):
     inp = model.extractor.get_input_var()
@@ -49,7 +43,7 @@ def generate_feature_embedding(model, batch_size=128):
 
 
 if __name__ == '__main__':
-    att_index = 1 # Pointy attribute
+    att_index = 1  # Pointy attribute
     dataset = ghiaseddin.datasets.Zappos50K1(root=ghiaseddin.settings.zappos_root, attribute_index=att_index, split_index=0)
     extractor = ghiaseddin.VGG16(weights=ghiaseddin.settings.vgg16_weights)
     model = ghiaseddin.Ghiaseddin(extractor=extractor, dataset=dataset)
