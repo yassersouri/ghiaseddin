@@ -450,7 +450,7 @@ class Ghiaseddin(object):
             ranks[idx:(idx + len(images))] = rs.flatten()
             idx += len(images)
 
-        embeddings = TSNE(random_state=random_seed).fit_transform(embeddings)
+        embeddings = TSNE(init='pca', random_state=random_seed).fit_transform(embeddings)
         ranks = scipy.stats.rankdata(ranks).astype(np.int)
 
         colors = plt.get_cmap('viridis')(np.linspace(0, 1, len(ranks)))
