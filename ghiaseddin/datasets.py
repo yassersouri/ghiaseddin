@@ -153,6 +153,22 @@ class Dataset(object):
 
         return boltons.iterutils.chunked_iter(self._iterate_pair_target(indices, self._test_pairs, self._test_targets), batch_size, fill=None)
 
+    def all_images(self, for_all=False, test=False):
+        if for_all:
+            return self._image_addresses
+
+        all_images_path = set()
+        if not test:
+            pair_ids = self._train_pairs
+        else:
+            pair_ids = self._test_pairs
+
+        for pid in range(len(pair_ids)):
+            all_images_path.add(self._image_addresses[pair_ids[pid][0]])
+            all_images_path.add(self._image_addresses[pair_ids[pid][1]])
+
+        return list(all_images_path)
+
 
 class Zappos50K1(Dataset):
     """The dataset helper class for Zappos50K-1, the coarse version of the dataset."""

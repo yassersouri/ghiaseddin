@@ -17,6 +17,8 @@ import boltons
 import skimage.transform
 import skimage.filters
 import skimage.color
+import scipy
+from sklearn.manifold import TSNE
 
 
 logger = logging.getLogger('Ghiaseddin')
@@ -417,8 +419,44 @@ class Ghiaseddin(object):
 
         return fig
 
-    def generate_embedding(self):
-        pass
+    def generate_embedding(self, for_all=False, random_seed=None):
+        if not random_seed:
+            random_seed = settings.RANDOM_SEED
+
+        all_image_paths = self.dataset.all_images(for_all)
+
+        if not getattr(self, 'embedding_fn', None):
+            inp = self.extractor.get_input_var()
+            embedding = lasagne.layers.get_output(self.extractor_layer, deterministic=True)
+            rank = lasagne.layers.get_output(self.absolute_rank_estimate, deterministic=True)
+            self.embedding_fn = theano.function([inp], [embedding, rank])
+
+        embeddings = np.zeros((len(all_image_paths), self.extractor.out_layer_dim), dtype=np.float32)
+        ranks = np.zeros((len(all_image_paths)), dtype=np.float32)
+
+        idx = 0
+        for images in boltons.iterutils.chunked(all_image_paths, self.train_batch_size * 2):
+            x = np.zeros((len(images), 3, self.extractor._input_height, self.extractor._input_width), dtype=np.float32)
+            for i, img_path in enumerate(images):
+                x[i, ...] = self.extractor._general_image_preprocess(utils.load_image(img_path))
+            es, rs = self.embedding_fn(x)
+
+            embeddings[idx:(idx + len(images)), :] = es
+            ranks[idx:(idx + len(images))] = rs.flatten()
+            idx += len(images)
+
+        embeddings = TSNE(random_state=random_seed).fit_transform(embeddings)
+        ranks = scipy.stats.rankdata(ranks).astype(np.int)
+
+        colors = plt.get_cmap('viridis')(np.linspace(0, 1, len(ranks)))
+        fig = plt.figure(figsize=(10, 10))
+        ax = fig.add_subplot(1, 1, 1)
+        for i in range(len(ranks)):
+            c = colors[ranks[i] - 1]
+            ax.scatter(embeddings[i, 0], embeddings[i, 1], color=c, s=15)
+            ax.axis('off')
+
+        return fig
 
     def conv1_filters(self):
         def vis_square(data):

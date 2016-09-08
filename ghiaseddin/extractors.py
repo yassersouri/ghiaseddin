@@ -140,6 +140,7 @@ class GoogLeNet(Extractor):
     _input_mean_to_subtract = [104, 117, 123]
 
     conv1_layer_name = 'conv1/7x7_s2'
+    out_layer_dim = 1024
 
     def __init__(self, weights=None, augmentation=False):
         super(GoogLeNet, self).__init__(weights, augmentation)
@@ -210,6 +211,7 @@ class VGG16(Extractor):
     _input_width = 224
 
     conv1_layer_name = 'conv1_1'
+    out_layer_dim = 4096
 
     def __init__(self, weights=None, augmentation=False):
         super(VGG16, self).__init__(weights, augmentation)
