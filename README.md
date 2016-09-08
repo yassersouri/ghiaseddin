@@ -19,7 +19,7 @@ Furthermore Ghiaseddin has a relation to [Ghiyāth al-Dīn Jamshīd al-Kāshī](
 
 The code is written in Python 2.7 and uses the [Lasagne](https://github.com/Lasagne/Lasagne) deep learning framework which is based on the amazing [Theano](https://github.com/Theano/Theano). These two are the main dependencies of the project. Besides these you will be needing CUDA 7 and cuDNN 4. It might work without CUDA or with lower versions but I have not tested it.
 
-To visualize the training procedure I have used [pastalog](https://github.com/rewonc/pastalog) which you will have to install.
+To visualize the training procedure I have used [pastalog](https://github.com/rewonc/pastalog). If you want to see the loss decrease in realtime you will have to install it (optional).
 
 For a complete list of dependencies and their versions see `requirements.txt`.
 
@@ -120,7 +120,7 @@ Currently (7th Sep 2016) our results on OSR, PubFig, Zappos50k1 and Zappos50k2 a
 
 ### Training a new model
 
-First start the pastalog server.
+First start the pastalog server (Optional).
 
 ```bash
 /path/to/project/ghiaseddin/scripts/start_pastalog.sh

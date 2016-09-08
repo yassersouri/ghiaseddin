@@ -5,8 +5,9 @@ import numpy as np
 from collections import OrderedDict
 try:
     from pastalog import Log
+    force_not_log = False
 except:
-    pass
+    force_not_log = True
 from datetime import datetime as dt
 import logging
 import settings
@@ -47,6 +48,10 @@ class Ghiaseddin(object):
         self.ranker_learning_rate = ranker_learning_rate
         self.debug = debug
         self.do_log = do_log
+
+        if force_not_log:
+            self.do_log = False
+            logger.warning('Not logging because pastalog is not installed.')
 
         extractor_name = self.extractor.__class__.__name__
         if extractor.augmentation:
