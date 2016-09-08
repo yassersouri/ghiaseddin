@@ -31,7 +31,7 @@ class Extractor(object):
     _input_raw_scale = 255
     _input_mean_to_subtract = [104, 117, 123]
 
-    def __init__(self, weights, augmentation=False):
+    def __init__(self, weights=None, augmentation=False):
         self.weights = weights
         self.augmentation = augmentation
 
@@ -127,7 +127,7 @@ class GoogLeNet(Extractor):
 
     conv1_layer_name = 'conv1/7x7_s2'
 
-    def __init__(self, weights, augmentation=False):
+    def __init__(self, weights=None, augmentation=False):
         super(GoogLeNet, self).__init__(weights, augmentation)
 
         def build_inception_module(name, input_layer, nfilters):
@@ -183,9 +183,10 @@ class GoogLeNet(Extractor):
         self.net = net
         self.out_layer = net['dropout5']
 
-        init_weights = self._get_weights_from_file(self.weights, 'param values')
-        init_weights = init_weights[:-2]  # since we have chopped off the last two layers of the network (loss3/classifier and prob), we won't need those
-        lasagne.layers.set_all_param_values(self.out_layer, init_weights)
+        if self.weights is not None:
+            init_weights = self._get_weights_from_file(self.weights, 'param values')
+            init_weights = init_weights[:-2]  # since we have chopped off the last two layers of the network (loss3/classifier and prob), we won't need those
+            lasagne.layers.set_all_param_values(self.out_layer, init_weights)
 
 
 class VGG16(Extractor):
@@ -196,7 +197,7 @@ class VGG16(Extractor):
 
     conv1_layer_name = 'conv1_1'
 
-    def __init__(self, weights, augmentation=False):
+    def __init__(self, weights=None, augmentation=False):
         super(VGG16, self).__init__(weights, augmentation)
 
         net = {}
@@ -227,9 +228,10 @@ class VGG16(Extractor):
         self.net = net
         self.out_layer = net['fc7_dropout']
 
-        init_weights = self._get_weights_from_file(self.weights, 'param values')
-        init_weights = init_weights[:-2]  # since we have chopped off the last two layers of the network, we won't need those
-        lasagne.layers.set_all_param_values(self.out_layer, init_weights)
+        if self.weights is not None:
+            init_weights = self._get_weights_from_file(self.weights, 'param values')
+            init_weights = init_weights[:-2]  # since we have chopped off the last two layers of the network, we won't need those
+            lasagne.layers.set_all_param_values(self.out_layer, init_weights)
 
 
 class InceptionV3(Extractor):
@@ -250,7 +252,7 @@ class InceptionV3(Extractor):
 
         return img
 
-    def __init__(self, weights, augmentation=False):
+    def __init__(self, weights=None, augmentation=False):
         super(InceptionV3, self).__init__(weights, augmentation)
 
         def bn_conv(input_layer, **kwargs):
@@ -401,6 +403,7 @@ class InceptionV3(Extractor):
         self.net = net
         self.out_layer = net['pool3']
 
-        init_weights = self._get_weights_from_file(self.weights, 'param values')
-        init_weights = init_weights[:-2]  # since we have chopped off the last two layers of the network (loss3/classifier and prob), we won't need those
-        lasagne.layers.set_all_param_values(self.out_layer, init_weights)
+        if self.weights is not None:
+            init_weights = self._get_weights_from_file(self.weights, 'param values')
+            init_weights = init_weights[:-2]  # since we have chopped off the last two layers of the network (loss3/classifier and prob), we won't need those
+            lasagne.layers.set_all_param_values(self.out_layer, init_weights)
