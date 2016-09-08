@@ -52,6 +52,20 @@ class Extractor(object):
         return self.net[self.INPUT_LAYER_NAME].input_var
 
     def _general_image_preprocess(self, img, augmentation=False):
+        """Preprocesses an image for the network
+
+        This is the general and typical implementation of the preprocessing used in CNNs.
+        Each extractor must implement it's own version of this function if it is different from this one.
+
+        Arguments:
+            img {numpy.ndarray} -- the image as a (h, w, 3) numpy array
+
+        Keyword Arguments:
+            augmentation {bool} -- [should random augmentation be performed on the image?] (default: {False})
+
+        Returns:
+            [numpy.ndarray] -- [returns another numpy array ready for the network, typical has a shape of (3, d, d)]
+        """
         if augmentation:
             img = utils.random_augmentation(img)
         img = utils.resize_image(img, (self._input_height, self._input_height))
