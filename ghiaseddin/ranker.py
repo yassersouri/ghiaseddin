@@ -20,6 +20,7 @@ import skimage.filters
 import skimage.color
 import scipy
 from sklearn.manifold import TSNE
+from sklearn.preprocess import normalize
 
 
 logger = logging.getLogger('Ghiaseddin')
@@ -445,6 +446,7 @@ class Ghiaseddin(object):
             for i, img_path in enumerate(images):
                 x[i, ...] = self.extractor._general_image_preprocess(utils.load_image(img_path))
             es, rs = self.embedding_fn(x)
+            normalize(es, norm='l2', copy=False)
 
             embeddings[idx:(idx + len(images)), :] = es
             ranks[idx:(idx + len(images))] = rs.flatten()
